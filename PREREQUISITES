@@ -1,0 +1,6 @@
+Zope (2.7.0 and up recommended)
+BTreeFolder2
+XWFCore
+XWFIDFactory
+CustomProperties
+CMFCore (we use some of their nice catalog stuff, for now)

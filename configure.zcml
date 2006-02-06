@@ -1,0 +1,16 @@
+<configure xmlns="http://namespaces.zope.org/zope"
+           xmlns:five="http://namespaces.zope.org/five">
+    <five:deprecatedManageAddDelete
+           class="Products.XWFFileLibrary2.XWFFileStorage2.XWFFileStorage2" />
+    <five:deprecatedManageAddDelete
+           class="Products.XWFFileLibrary2.XWFFileLibrary2.XWFFileLibrary2" />
+    <five:deprecatedManageAddDelete
+           class="Products.XWFFileLibrary2.XWFFile2.XWFFile2" />
+    <five:deprecatedManageAddDelete
+           class="Products.XWFFileLibrary2.XWFVirtualFileFolder2.XWFVirtualFileFolder2" />
+    <subscriber
+      for="Products.XWFFileLibrary2.interfaces.IXWFFile2
+           zope.app.container.interfaces.IObjectAddedEvent"
+      handler="Products.XWFFileLibrary2.XWFFile2.addedFile"
+      /> 
+</configure>
