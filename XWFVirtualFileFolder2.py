@@ -315,7 +315,7 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         tags = r['tags']
         
         return presentation.view_files(b_start=b_start, b_size=b_size, s_on=s_on,
-                                       s_order=s_order, topics=topics)
+                                       s_order=s_order, topics=topics, tags=tags)
     
     def pretty_size(self, size):
         """ Given a size, return a 'prettied' variation that most users will
