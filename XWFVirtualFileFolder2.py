@@ -310,7 +310,9 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         """
         presentation = self.Presentation.Tofu.FileLibrary2.xml
         
-        topics = self.get_file_topics()
+        r = self.get_file_topics_tags()
+        topics = r['topics']
+        tags = r['tags']
         
         return presentation.view_files(b_start=b_start, b_size=b_size, s_on=s_on,
                                        s_order=s_order, topics=topics)
@@ -332,7 +334,8 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
     def pane_files(self, REQUEST, b_start=1, b_size=15,
                          s_on='modification_time', s_order='desc',
                          modification_time=None,
-                         topic=None):
+                         topic=None,
+                         tags=None):
         """ Return the files view.
         
         """
@@ -359,7 +362,9 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
                                           'range': 'min'}
         if topic:
             query['topic'] = topic
-                          
+        if tags:
+            query['tags'] = tags
+            
         result_set = self.find_files(query)
         
         result_set = sequence.sort(result_set,
@@ -412,6 +417,32 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         
         return topics
         
+    def get_file_topics_tags(self):
+        """ Helper method for getting a list of topics and tags that are already associated
+            with a file.
+        
+        """
+        topics = []; tags = []
+        for f in self.find_files():
+            topic = None; tag = None
+            try:
+                topic = f['topic']
+            except:
+                pass
+            try:
+                tag = f['tag']
+            except:
+                pass
+            if topic and topic not in topics:
+                topics.append(topic)
+            if tag and tag not in tags:
+                tags.append(tags)
+                
+        topics.sort()
+        tags.sort()
+        
+        return {'topics': topics, 'tags': tags}
+
     def get_file_topics(self):
         """ Helper method for getting a list of topics that are already associated
             with a file.
