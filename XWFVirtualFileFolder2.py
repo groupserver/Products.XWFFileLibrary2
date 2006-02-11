@@ -424,19 +424,20 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         """
         topics = []; tags = []
         for f in self.find_files():
-            topic = None; tag = None
+            topic = None; tag = []
             try:
                 topic = f['topic']
             except:
                 pass
             try:
-                tag = f['tag']
+                tag = f['tags']
             except:
                 pass
             if topic and topic not in topics:
                 topics.append(topic)
-            if tag and tag not in tags:
-                tags.append(tags)
+            for t in tag:
+                if t not in tags:
+                    tags.append(t)
                 
         topics.sort()
         tags.sort()
