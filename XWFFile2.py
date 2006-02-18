@@ -93,12 +93,6 @@ class XWFFile2(CatalogAware, File):
     
     converters = {'application/vnd.oasis.opendocument.spreadsheet': (OOfficeConverter(), 'OpenOffice Spreadsheet')}
     
-    group_ids = []
-    tags = []
-    topic = ''
-    summary = ''
-    dc_creator = ''
-        
     def __init__(self, id):
         """ Initialise a new instance of XWFFile.
             
@@ -307,7 +301,12 @@ class XWFFile2(CatalogAware, File):
     #    return cgi.escape(strippedwords)
     
     # for now we just use the summary property, rather than trying to be tricky
-    indexable_summary = summary
+
+    def indexable_summary(self):
+        """ Return a summary for indexing in the catalog.
+
+        """
+        return self.getProperty('summary', '')
     
     def set_modificationTime(self, time=None):
         """ Set the modification time.
