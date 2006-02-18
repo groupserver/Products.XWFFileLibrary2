@@ -93,6 +93,12 @@ class XWFFile2(CatalogAware, File):
     
     converters = {'application/vnd.oasis.opendocument.spreadsheet': (OOfficeConverter(), 'OpenOffice Spreadsheet')}
     
+    group_ids = []
+    tags = []
+    topic = ''
+    summary = ''
+    dc_creator = ''
+        
     def __init__(self, id):
         """ Initialise a new instance of XWFFile.
             
@@ -106,7 +112,8 @@ class XWFFile2(CatalogAware, File):
         for prop in (('group_ids',[],'lines'),
                      ('topic', '', 'ustring'),
                      ('tags', [], 'ulines'),
-                     ('dc_creator', '', 'ustring')):
+                     ('dc_creator', '', 'ustring'),
+                     ('summary', '', 'ustring')):
             self.manage_addProperty(*prop)
     
     def _renderPageTemplateFile(self, filename, *args, **kws):
@@ -281,24 +288,25 @@ class XWFFile2(CatalogAware, File):
             return cgi.escape(data)
         return data
         
-    def summary(self):
-        """ Returns a shortened version of indexable_content for use
-        in the catalog metadata summary of a file.
-        
-        Basically we return either up to 500 characters or up to 50 words.
-        
-        """
-        content = self.indexable_content(escape=False)[:500]
-        words = content.split()
-        
-        strippedwords = ''
-        count = 0
-        for word in words:
-            if len(word) <= 25:
-                strippedwords += '%s ' % word
-        
-        return cgi.escape(strippedwords)
-        
+    #def summary(self):
+    #    """ Returns a shortened version of indexable_content for use
+    #    in the catalog metadata summary of a file.
+    #    
+    #    Basically we return either up to 500 characters or up to 50 words.
+    #    
+    #    """
+    #    content = self.indexable_content(escape=False)[:500]
+    #    words = content.split()
+    #    
+    #    strippedwords = ''
+    #    count = 0
+    #    for word in words:
+    #        if len(word) <= 25:
+    #            strippedwords += '%s ' % word
+    #    
+    #    return cgi.escape(strippedwords)
+    
+    # for now we just use the summary property, rather than trying to be tricky
     indexable_summary = summary
     
     def set_modificationTime(self, time=None):

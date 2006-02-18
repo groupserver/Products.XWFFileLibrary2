@@ -393,7 +393,12 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         else:
             creator = ''
         
-        properties = {'topic': topic, 'tags': tags, 'dc_creator': creator}
+        summary = form.get('summary','')
+
+        properties = {'topic': topic,
+                      'tags': tags,
+                      'dc_creator': creator,
+                      'summary': summary}
         
         file = self.add_file(form.get('file'), properties)
         
