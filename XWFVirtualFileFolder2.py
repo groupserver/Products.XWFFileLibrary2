@@ -17,7 +17,7 @@
 # You MUST follow the rules in http://iopen.net/STYLE before checking in code
 # to the trunk. Code which does not follow the rules will be rejected.
 #
-import os, Globals, smtplib
+import os, Globals, smtplib, types
 
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from Products.XWFIdFactory.XWFIdFactoryMixin import XWFIdFactoryMixin
@@ -380,6 +380,13 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
     
     def cb_file_addFile(self, form):
         topic = form.get('topic', '')
+        if type(topic) in (types.TupleType, types.ListType):
+            topic = filter(None, topic)
+            if not topic:
+                topic = ''
+            else:
+                topic = topic[0]
+        
         rtags = form.get('tags', '')
         tagparts = rtags.split('\n')
         tags = []
