@@ -398,7 +398,7 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         properties = {'topic': topic,
                       'tags': tags,
                       'dc_creator': creator,
-                      'summary': summary}
+                      'description': summary}
         
         file = self.add_file(form.get('file'), properties)
         
@@ -505,10 +505,7 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         not. If so, return the summary, otherwise return None.
         
         """
-        if result.content_type not in self.printable_mimetypes:
-            return None
-        else:
-            return result.indexable_summary
+        return result.indexable_summary
         
         
     security.declareProtected('Upgrade objects', 'upgrade')

@@ -107,7 +107,7 @@ class XWFFile2(CatalogAware, File):
                      ('topic', '', 'ustring'),
                      ('tags', [], 'ulines'),
                      ('dc_creator', '', 'ustring'),
-                     ('summary', '', 'ustring')):
+                     ('description', '', 'ustring')):
             self.manage_addProperty(*prop)
     
     def _renderPageTemplateFile(self, filename, *args, **kws):
@@ -300,14 +300,16 @@ class XWFFile2(CatalogAware, File):
     #    
     #    return cgi.escape(strippedwords)
     
-    # for now we just use the summary property, rather than trying to be tricky
-
+    # for now we just use the description property, rather than trying to be 
+    # tricky
     def indexable_summary(self):
         """ Return a summary for indexing in the catalog.
 
         """
-        return self.getProperty('summary', '')
+        return self.getProperty('description', '')
     
+    summary = indexable_summary
+
     def set_modificationTime(self, time=None):
         """ Set the modification time.
         
