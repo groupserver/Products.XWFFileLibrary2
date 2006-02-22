@@ -129,15 +129,17 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         storage = library.get_fileStorage()
         
         filename = getattr(file_object, 'filename', '')
-        id = storage.add_file(file_object, filename)
+        fname = convertTextToAscii(removePathsFromFilenames(filename))
+        
+        id = storage.add_file(file_object, fname)
         
         _file = storage.get_file(id)
-        
+                
         group_object = self.Scripts.get.group_object()
         group_ids = group_object and [group_object.getId()] or []
         
         _file.manage_changeProperties(group_ids=group_ids,
-                                      title=filename,
+                                      title=fname,
                                       **properties)
         _file.reindex_object()
         
