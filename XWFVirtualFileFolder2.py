@@ -326,9 +326,7 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         """
         if size < 5000:
             return 'tiny'
-        elif size < 50000:
-            return 'small'
-        elif size < 100000:
+        elif size < 1000000:
             return '%sKB' % (size/1024)
         else:
             return '%sMB' % (size/(1024*1024))
