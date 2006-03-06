@@ -75,6 +75,23 @@ def addedFile(ob, event):
     """
     ob._base_files_dir = event.newParent.get_baseFilesDir()
 
+def removedFile(ob, event):
+    """ A File was removed from the storage.
+
+    """
+    filepath = os.path.join(obj._base_files_dir, ob.getId())
+    LOG('XWFFile2',INFO,'would remove file %s' % filepath)
+
+from OFS.interfaces import IObjectRemovedEvent,IObjectAddedEvent
+def movedFile(ob, event):
+    """A File was moved in the storage.
+    
+    """
+    if not IObjectRemovedEvent.providedBy(event):
+        addedFile(ob, event)
+    if not IObjectAddedEvent.providedBy(event):
+        removedFile(ob, event)
+
 class XWFFile2(CatalogAware, File):
     """ The basic implementation for a file object, with metadata stored in 
     the ZODB, and the data stored on disk.

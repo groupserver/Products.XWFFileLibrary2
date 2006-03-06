@@ -13,4 +13,9 @@
            zope.app.container.interfaces.IObjectAddedEvent"
       handler="Products.XWFFileLibrary2.XWFFile2.addedFile"
       /> 
+    <subscriber
+      for="Products.XWFFileLibrary2.interfaces.IXWFFile2
+           zope.app.container.interfaces.IObjectMovedEvent"
+      handler="Products.XWFFileLibrary2.XWFFile2.movedFile"
+      /> 
 </configure>
