@@ -73,24 +73,38 @@ def addedFile(ob, event):
     """A File was added to the storage.
     
     """
+    LOG('XWFFile2',INFO,'we are %s' % str(ob.getId()))
+
+    if event.newParent.meta_type != 'XWF File Storage 2':
+        return
+
     ob._base_files_dir = event.newParent.get_baseFilesDir()
 
 def removedFile(ob, event):
     """ A File was removed from the storage.
 
     """
-    filepath = os.path.join(obj._base_files_dir, ob.getId())
-    LOG('XWFFile2',INFO,'would remove file %s' % filepath)
+    filepath = os.path.join(ob._base_files_dir, ob.getId())
+    LOG('XWFFile2',INFO,'removed file %s' % filepath)
+    os.remove(filepath)
 
-from OFS.interfaces import IObjectRemovedEvent,IObjectAddedEvent
+from zope.app.container.interfaces import IObjectRemovedEvent,IObjectAddedEvent
 def movedFile(ob, event):
     """A File was moved in the storage.
     
     """
     if not IObjectRemovedEvent.providedBy(event):
-        addedFile(ob, event)
+        #raise NotImplementedError # we don't support moving
+        return
     if not IObjectAddedEvent.providedBy(event):
         removedFile(ob, event)
+
+def copiedFile(ob, event):
+    """A File was copied.
+
+    """
+    # We don't support this
+    raise NotImplementedError
 
 class XWFFile2(CatalogAware, File):
     """ The basic implementation for a file object, with metadata stored in 
@@ -204,17 +218,18 @@ class XWFFile2(CatalogAware, File):
         self.size = size
         self.set_modificationTime()
         
-        id = os.path.join(base_files_dir, self.getId())
-        f = file(id, 'wb+')
+        if base_files_dir:
+            id = os.path.join(base_files_dir, self.getId())
+            f = file(id, 'wb+')
         
-        if hasattr(data, '__class__') and data.__class__ is Pdata:
-            while data is not None:
-                f.write(data.data)
-                data=data.next
-        else:
-            f.write(data)
+            if hasattr(data, '__class__') and data.__class__ is Pdata:
+                while data is not None:
+                    f.write(data.data)
+                    data=data.next
+            else:
+                f.write(data)
             
-        f.close()
+            f.close()
         
         # fix the title
         title = self.title
