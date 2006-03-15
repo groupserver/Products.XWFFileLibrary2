@@ -177,14 +177,13 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         
         email_address = email_addresses[0]
         
-        message = template(self, self.REQUEST, from_addr=email_address,
-                                 n_type='new_file', n_id=group_id,
-                                 subject=topic, group=group_object,
-                                 user=user, file=file)
-        
         list_manager = messages.get_xwfMailingListManager()
         for list_id in messages.getProperty('xwf_mailing_list_ids', []):        
             curr_list = list_manager.get_list(list_id)
+            message = template(self, self.REQUEST, from_addr=email_address,
+                                 n_type='new_file', n_id=group_id,
+                                 subject=topic, group=group_object, list_object=curr_list,
+                                 user=user, file=file)        
             result = curr_list.manage_listboxer({'Mail': message})
         
         return result
