@@ -420,12 +420,12 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         """
         topics = []
         if hasattr(self.aq_parent.aq_explicit, 'messages'):
-            rtopics = self.aq_parent.messages.thread_results({}, 1, 100, 'mailSubject',
-                                                               'asc')[4]
+            rtopics = self.aq_parent.messages.thread_results({}, 1, 100, 'mailDate',
+                                                               'desc')[4]
             for topic in rtopics:
                 if topic[0]:
                     topics.append(topic[1][0]['mailSubject'])
-        
+        topics.sort()
         return topics
         
     def get_file_topics_tags(self):
