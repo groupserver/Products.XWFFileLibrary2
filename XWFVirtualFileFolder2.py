@@ -420,7 +420,7 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         """
         topics = []
         if hasattr(self.aq_parent.aq_explicit, 'messages'):
-            rtopics = self.aq_parent.messages.thread_results({}, 1, 100, 'mailDate',
+            rtopics = self.aq_parent.messages.thread_results({}, 1, 25, 'mailDate',
                                                                'desc')[4]
             for topic in rtopics:
                 if topic[0]:
