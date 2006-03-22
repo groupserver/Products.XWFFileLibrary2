@@ -235,7 +235,7 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         
         return results
     
-    security.declarePublic('get_file')
+    security.declareProtected('View', 'get_file')
     def get_file(self, REQUEST, RESPONSE):
         """ """
         from zExceptions import Unauthorized
