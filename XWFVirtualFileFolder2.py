@@ -166,7 +166,8 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
             return False
         
         group_id = group_object.getId()
-        
+        host = group_object.Scripts.get.option('canonicalHost')
+
         template = getNotificationTemplate(self, 'new_file', group_id)
         if not template:
             return False
@@ -183,7 +184,7 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
             message = template(self, self.REQUEST, from_addr=email_address,
                                  n_type='new_file', n_id=group_id,
                                  subject=topic, group=group_object, list_object=curr_list,
-                                 user=user, file=file)        
+                                 user=user, file=file, host=host)        
             result = curr_list.manage_listboxer({'Mail': message})
         
         return result
