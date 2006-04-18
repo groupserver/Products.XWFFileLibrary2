@@ -312,7 +312,7 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         presentation = self.Presentation.Tofu.FileLibrary2.xml
 
         topic = REQUEST.form.get('topic', '')
-        
+
         r = self.get_file_topics_tags(filter_topic=topic)
         topics = r['topics']
         tags = r['tags']
@@ -368,6 +368,9 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
             
         result_set = self.find_files(query)
         
+        if 'removed' not in tags:
+            result_set = filter(lambda x: 'removed' not in x, result_set) 
+                
         result_set = sequence.sort(result_set,
                                   (('modification_time', 'cmp', 'desc'),))
         
