@@ -448,7 +448,7 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
             except:
                 pass
         
-            if (filter_topics and topic == filter_topic) or not filter_topic:               
+            if (filter_topic and topic == filter_topic) or not filter_topic:               
                 for t in tag:
                     if t not in tags:
                         tags.append(t)
