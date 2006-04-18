@@ -388,8 +388,8 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
             
         result_set = self.find_files(query)
         
-        if 'removed' not in tags:
-            result_set = filter(lambda x: 'removed' not in x.tags, result_set) 
+        if 'hidden' not in tags:
+            result_set = filter(lambda x: 'hidden' not in x.tags, result_set) 
                 
         result_set = sequence.sort(result_set,
                                   (('modification_time', 'cmp', 'desc'),))
