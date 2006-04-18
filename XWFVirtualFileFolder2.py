@@ -263,13 +263,33 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         
         return object.index_html(REQUEST, RESPONSE)
 
-    def remove_file(self, id):
+    security.declareProtected('View', 'hide_file')
+    def hide_file(self, id):
         """ """
         object = self.find_files({'id': id})[0].getObject()
         
-        object.aq_parent.remove_file(id)
+        tags = list(object.getProperty('tags', []))
+        if 'hidden' not in tags:
+            tags.append('hidden')
         
-        return self.REQUEST.RESPONSE.redirect('index_html?message=removed_file')
+        object.manage_changeProperties(tags=tags)
+        object.reindex_object()
+        
+        return self.REQUEST.RESPONSE.redirect('view_files?message=hide')
+    
+    security.declareProtected('View', 'show_file')
+    def show_file(self, id):
+        """ """
+        object = self.find_files({'id': id})[0].getObject()
+        
+        tags = list(object.getProperty('tags', []))
+        if 'hidden' in tags:
+            tags.remove('hidden')
+        
+        object.manage_changeProperties(tags=tags)
+        object.reindex_object()
+        
+        return self.REQUEST.RESPONSE.redirect('view_files?message=show')
     
     #   
     # Views and Workflow
