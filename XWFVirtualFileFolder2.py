@@ -310,8 +310,10 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         
         """
         presentation = self.Presentation.Tofu.FileLibrary2.xml
+
+        topic = REQUEST.form.get('topic', '')
         
-        r = self.get_file_topics_tags()
+        r = self.get_file_topics_tags(filter_topic=topic)
         topics = r['topics']
         tags = r['tags']
         
@@ -428,12 +430,13 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         topics.sort()
         return topics
         
-    def get_file_topics_tags(self):
+    def get_file_topics_tags(self, filter_topic=''):
         """ Helper method for getting a list of topics and tags that are already associated
             with a file.
         
         """
-        topics = []; tags = []
+        topics = []
+        tags = []
         for f in self.find_files():
             topic = None; tag = []
             try:
@@ -444,12 +447,15 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
                 tag = f['tags']
             except:
                 pass
+        
+            if (filter_topics and topic == filter_topic) or not filter_topic:               
+                for t in tag:
+                    if t not in tags:
+                        tags.append(t)
+            
             if topic and topic not in topics:
                 topics.append(topic)
-            for t in tag:
-                if t not in tags:
-                    tags.append(t)
-                
+        
         topics.sort()
         tags.sort()
         
@@ -464,6 +470,7 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         for f in self.find_files():
             try:
                 topic = f['topic']
+                
             except:
                 continue
             if topic and topic not in topics:
