@@ -432,8 +432,9 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
                       'description': summary}
         
         file = self.add_file(form.get('file'), properties)
-        
-        self.send_notification(topic=topic, file=file)
+
+        if form.get('sendEmailNotification', True):
+            self.send_notification(topic=topic, file=file)
         
         message = '''<p>Successfully added the file</p>'''
         
