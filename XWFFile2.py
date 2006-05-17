@@ -309,10 +309,7 @@ class XWFFile2(CatalogAware, File):
                 data = str(data.decode('UTF-8'))
             except:
                 data = ''
-        
-        if escape:
-            return cgi.escape(data)
-        
+
         new_data = []
         for word in data.split():
             if len(word) > 15 or len(word) < 3:
@@ -328,7 +325,10 @@ class XWFFile2(CatalogAware, File):
                 new_data.append(word)
             
         data = ' '.join(new_data)
-
+                
+        if escape:
+            return cgi.escape(data)
+        
         return data
         
     #def summary(self):
