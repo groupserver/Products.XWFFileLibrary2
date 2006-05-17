@@ -39,7 +39,7 @@ from mimetypes import MimeTypes
 from zLOG import LOG, INFO
 
 import xml.sax, cgi
-import zipfile, cStringIO
+import zipfile, cStringIO, string
 from xml.sax.handler import ContentHandler
 
 class ootextHandler(ContentHandler):
@@ -291,17 +291,17 @@ class XWFFile2(CatalogAware, File):
     def indexable_content(self, escape=True):
         """ Returns the content as bare as possible for indexing.
         
-        Trim to 50kB -- this means we don't index the _whole_ document
+        Trim to 5kB -- this means we don't index the _whole_ document
         necessarily, but then we probably don't blow our DB out either.
         
         """
         converters = self.converters.get(getattr(self.aq_explicit, 'content_type', ''), (None, None))
         if converters[0]:
-            data, encoding = converters[0].convert(self.data)[:50000]
+            data, encoding = converters[0].convert(self.data)[:5000]
             if encoding != 'UTF-8':
                 data = data.decode(encoding).encode('UTF-8')
         else:
-            data = self.data[:50000]
+            data = self.data[:10000]
         
             data = XWFUtils.convertTextToAscii(data)
             
@@ -312,6 +312,20 @@ class XWFFile2(CatalogAware, File):
         
         if escape:
             return cgi.escape(data)
+        
+        new_data = []
+        for word in data.split():
+            if len(word) > 15:
+                continue
+            
+            for letter in word:
+                if letter not in string.letters:
+                    continue
+ 
+            new_data.append(word)
+            
+        data = ' '.join(new_data)
+
         return data
         
     #def summary(self):
