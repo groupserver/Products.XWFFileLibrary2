@@ -315,14 +315,17 @@ class XWFFile2(CatalogAware, File):
         
         new_data = []
         for word in data.split():
-            if len(word) > 15:
+            if len(word) > 15 or len(word) < 3:
                 continue
             
+            skip = False
             for letter in word:
                 if letter not in string.letters:
-                    continue
- 
-            new_data.append(word)
+                    skip = True
+                    break
+                    
+            if not skip:
+                new_data.append(word)
             
         data = ' '.join(new_data)
 
