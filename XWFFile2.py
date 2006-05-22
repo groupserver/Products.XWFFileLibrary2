@@ -116,6 +116,12 @@ class XWFFile2(CatalogAware, File):
     __implements__ = (IXWFXml.IXmlProducer,)
     implements(IXWFFile2)
 
+
+    manage_options = File.manage_options + \
+                     ({'label': 'Reindex',
+                       'action': 'reindex_file'},)
+
+
     meta_type = 'XWF File 2'
     version = 0.1
     
