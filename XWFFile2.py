@@ -252,6 +252,12 @@ class XWFFile2(CatalogAware, File):
         
         # index ourselves into the catalog
         self.index_object()
+
+    def reindex_file(self):
+        """ Reindex ourselves into the catalog.
+
+        """
+        self.reindex_object()
         
     def read(self, file_only=False):
         """ Read back the file data from our backend.
