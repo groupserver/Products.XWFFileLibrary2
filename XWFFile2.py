@@ -259,6 +259,8 @@ class XWFFile2(CatalogAware, File):
         """
         self.reindex_object()
         
+        return 'Successfully reindexed file'
+
     def read(self, file_only=False):
         """ Read back the file data from our backend.
             
