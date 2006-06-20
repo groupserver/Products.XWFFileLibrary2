@@ -88,6 +88,18 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         self.title = title or id
         self.ucid = None
 
+    def __before_publishing_traverse__(self, self2, request):
+        """ """
+        path = request['TraversalRequestNameStack']
+        subpath = path[:]
+        subpath.reverse()
+        if subpath:
+            path[:] = [subpath[0]]
+        else:
+            path[:] = []
+        subpath.reverse()
+        request.set('traverse_subpath', subpath)
+
     def processForm(self):
         """ Process an XForms submission.
     
@@ -262,6 +274,16 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
                                         'inline; filename="%s"' % filename)
         
         return object.index_html(REQUEST, RESPONSE)
+
+    security.declareProtected('View', 'f')
+    def f(self, REQUEST, RESPONSE):
+        """ A really short name for a file, enabling fetching a file like:
+            
+               /SOMEFILESAREA/f/FILEID/FILE_NAME
+        """
+        REQUEST.form.set('id', REQUEST.traverse_subpath[1])
+        
+        return self.get_file(REQUEST, RESPONSE)
 
     security.declareProtected('View', 'hide_file')
     def hide_file(self, id):
