@@ -92,7 +92,6 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         """ """
         path = request['TraversalRequestNameStack']
         subpath = path[:]
-        subpath.reverse()
         if subpath:
             path[:] = [subpath[0]]
         else:
