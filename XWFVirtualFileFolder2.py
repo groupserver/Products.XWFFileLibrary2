@@ -269,7 +269,7 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         filename = object.getProperty('filename', '').strip()
         if not filename:
             filename = object.getProperty('title')
-            
+
         self.REQUEST.RESPONSE.setHeader('Content-Disposition',
                                         'inline; filename="%s"' % filename)
         
@@ -281,7 +281,7 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
             
                /SOMEFILESAREA/f/FILEID/FILE_NAME
         """
-        REQUEST.form.set('id', REQUEST.traverse_subpath[1])
+        REQUEST.form['id'] = REQUEST.traverse_subpath[1]
         
         return self.get_file(REQUEST, RESPONSE)
 
