@@ -21,6 +21,7 @@ import os, Globals, smtplib, types
 
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from Products.XWFIdFactory.XWFIdFactoryMixin import XWFIdFactoryMixin
+from XWFFile2 import XWFFileError
 
 from DocumentTemplate import sequence
 from DateTime import DateTime        
@@ -452,8 +453,12 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
                       'dc_creator': creator,
                       'description': summary}
         
-        file = self.add_file(form.get('file'), properties)
-
+        try:
+            file = self.add_file(form.get('file'), properties)
+        except XWFFileError, x:
+            message = '''<p>There was a problem adding the file: %s</p>''' % x
+            return {'message': message, 'error': True}
+        
         sendEmailNotification = form.get('sendEmailNotification', 0)
         try:
             sendEmailNotification = int(sendEmailNotification) and True or False

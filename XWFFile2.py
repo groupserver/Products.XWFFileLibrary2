@@ -38,9 +38,49 @@ from mimetypes import MimeTypes
 
 from zLOG import LOG, INFO
 
-import xml.sax, cgi
+import xml.sax, cgi, tempfile
 import zipfile, cStringIO, string
+
 from xml.sax.handler import ContentHandler
+
+class XWFFileError(Exception):
+    pass
+
+class DataVirusCheckClamAVAdapter(object):
+    def __init__( self, data ):
+        self.data = data
+
+    def process( self ):
+        try:
+            fn = tempfile.mktemp()
+            f = file( fn, 'a+' )
+            f.write( self.data )
+            f.close()
+            
+            has_virus, virus_name = pyclamav.scanfile( fn )
+            
+        finally:
+            os.remove(fn)
+        
+        if has_virus:
+            return (False, "Found virus %s in file data" % virus_name)
+        
+        return (True, '')
+
+class DataVirusCheckNullAdapter(object):
+    def __init__( self, data ):
+        self.data = data
+
+    def process( self ):
+        return (True, '')
+
+try:
+    import pyclamav
+    DataVirusCheckAdapter = DataVirusCheckClamAVAdapter
+    LOG('XWFFile2',INFO,'found pyclamav, using clam av virus check adapter')
+except:
+    DataVirusCheckAdapter = DataVirusCheckNullAdapter
+    LOG('XWFFile2',INFO,'pyclamav not found, using null virus check adapter')
 
 class ootextHandler(ContentHandler):
 
@@ -73,8 +113,6 @@ def addedFile(ob, event):
     """A File was added to the storage.
     
     """
-    LOG('XWFFile2',INFO,'we are %s' % str(ob.getId()))
-
     if event.newParent.meta_type != 'XWF File Storage 2':
         return
 
@@ -85,7 +123,6 @@ def removedFile(ob, event):
 
     """
     filepath = os.path.join(ob._base_files_dir, ob.getId())
-    LOG('XWFFile2',INFO,'removed file %s' % filepath)
     os.remove(filepath)
 
 from zope.app.container.interfaces import IObjectRemovedEvent,IObjectAddedEvent
@@ -120,8 +157,7 @@ class XWFFile2(CatalogAware, File):
     manage_options = File.manage_options + \
                      ({'label': 'Reindex',
                        'action': 'reindex_file'},)
-
-
+    
     meta_type = 'XWF File 2'
     version = 0.1
     
@@ -219,6 +255,12 @@ class XWFFile2(CatalogAware, File):
         """
         
         """
+        passed, virus_name = DataVirusCheckAdapter( data ).process()
+        
+        if not passed:
+            LOG('XWFFile2',INFO,'found virus %s, rejecting file' % virus_name)
+            raise XWFFileError('found virus %s, rejecting file' % virus_name)
+        
         # this isn't necessarily an error, on init we get called without data
         base_files_dir = self._base_files_dir
         self.size = size
