@@ -54,7 +54,8 @@ class DataVirusCheckClamAVAdapter(object):
         try:
             fn = tempfile.mktemp()
             f = file( fn, 'a+' )
-            f.write( self.data )
+            for d in self.data:
+                f.write( d )
             f.close()
             
             has_virus, virus_name = pyclamav.scanfile( fn )
