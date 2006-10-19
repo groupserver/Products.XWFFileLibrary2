@@ -284,7 +284,7 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         fid = REQUEST.traverse_subpath[1]
         # a workaround for an odd bug
         if fid == 'f':
-            REQUEST.traverse_subpath[2]
+            fid = REQUEST.traverse_subpath[2]
             
         REQUEST.form['id'] = fid
         
