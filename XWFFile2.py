@@ -331,15 +331,16 @@ class XWFFile2(CatalogAware, File):
         
         if file_only:
             return f
-        
+           
         return f.read()
     
     @property
     def data(self):
         """  """
-        data, size = self._read_data(self.read(file_only=False))
-        
-        return data
+        return self.read(file_only=False)
+        #data, size = self._read_data(self.read(file_only=False))
+        #
+        #return data
     
     def modification_time(self):
         """ Return the modification time.
