@@ -1,5 +1,5 @@
-var cb_paneLoader = function(type, data, evt, kwArgs) {
-    el = document.getElementById(kwArgs['paneId']);
+var cb_paneLoader = function( data, paneId ) {
+    el = document.getElementById(paneId);
     el.innerHTML = data;
 }
 
@@ -8,13 +8,8 @@ var cb_failedLoad = function(type, evt) {
 }
 
 function paneLoader(someUrl, somePaneId) {
-	dojo.io.bind({
-    	    url: someUrl,
-        	load: cb_paneLoader,
-	        error: cb_failedLoad,
-	        paneId: somePaneId,
-    	    mimetype: "text/plain", /* optional */
-	        /* sync: true, option default = async */
-    	    transport: "XMLHTTPTransport" /* optional default = "XMLHTTPTransport" */
-	});
+        new Ajax.Request(someUrl,
+                         {onSuccess: function (transport, json) { cb_paneLoader(transport.responseText, somePaneId) },
+                          onFailure: cb_failedLoad,
+                          method: "GET"});
 }
