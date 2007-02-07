@@ -28,5 +28,9 @@
       /> 
   
   <browser:resourceDirectory name="fileIcons"
-    directory="browser/images/fileIcons/16x16/" permission="zope2.View" />
+    directory="browser/images/fileIcons/16x16/" permission="zope2.Public" />
+
+  <browser:resourceDirectory name="pane"
+    directory="browser/javascript/pane" permission="zope2.Public" />
+
 </configure>
