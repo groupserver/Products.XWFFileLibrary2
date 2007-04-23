@@ -259,6 +259,7 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         if not getSecurityManager().validate(None, self, None,
                                              self.find_files, None):
             raise Unauthorized
+        
         id = REQUEST.form.get('id', '')
         object = self.find_files({'id': id})[0].getObject()
          

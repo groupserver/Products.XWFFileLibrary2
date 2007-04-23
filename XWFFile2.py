@@ -261,6 +261,11 @@ class XWFFile2(CatalogAware, File):
         """
         
         """
+        if not data:
+            # still index
+            self.index_object()
+            return
+                        
         passed, virus_name = DataVirusCheckAdapter( data ).process()
         
         if not passed:
