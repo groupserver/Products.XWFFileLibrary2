@@ -75,7 +75,9 @@ class XWFFileStorage2(Folder):
         
             UnitTest: TestXWFFileLibrary.test_4_addRemoveFiles
         """
-        if not id_hint and not force_id:
+        if id_hint and force_id:
+            id = id_hint
+        else:
             # get the next unique ID from the File Library container
             incid = str(self.get_nextId())
             isotimestamp = time.strftime('%Y-%m-%dT%H%M%SZ', time.gmtime())
@@ -87,9 +89,7 @@ class XWFFileStorage2(Folder):
                     id += '-%s' % id_hint.strip().join()
                 except:
                     pass
-        else:
-            id = id_hint
-        
+                
         XWFFile2.manage_addXWFFile2(self, id, file_object)
         
         return id
