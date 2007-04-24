@@ -66,7 +66,7 @@ class XWFFileStorage2(Folder):
         f = StringIO.StringIO('hello, this is a test')
         return os.path.join(self.base_files_dir, self.add_file(f))
         
-    def add_file(self, file_object, id_hint=None):
+    def add_file(self, file_object, id_hint=None, force_id=None):
         """ Add a new file to the file storage, returning a reference to the file's ID as
         it was stored.
         
@@ -75,18 +75,18 @@ class XWFFileStorage2(Folder):
         
             UnitTest: TestXWFFileLibrary.test_4_addRemoveFiles
         """
-        # get the next unique ID from the File Library container
-        incid = str(self.get_nextId())
-        isotimestamp = time.strftime('%Y-%m-%dT%H%M%SZ', time.gmtime())
-        
-        id = '%s-%s' % (incid, isotimestamp)
-        
-        if id_hint:
-            try:
-                id += '-%s' % id_hint.strip().join()
-            except:
-                pass
-        
+        if not id_hint and not force_id:
+            # get the next unique ID from the File Library container
+            incid = str(self.get_nextId())
+            isotimestamp = time.strftime('%Y-%m-%dT%H%M%SZ', time.gmtime())
+            
+            id = '%s-%s' % (incid, isotimestamp)
+            
+            if id_hint:
+                try:
+                    id += '-%s' % id_hint.strip().join()
+                except:
+                    pass
         
         XWFFile2.manage_addXWFFile2(self, id, file_object)
         
