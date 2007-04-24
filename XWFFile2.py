@@ -463,7 +463,8 @@ def manage_addXWFFile2(container, id, file_object,
     
     obj = getattr(container, id)
     
-    obj.manage_upload(file_object)
+    if file_object:
+        obj.manage_upload(file_object)
     
     if RESPONSE and submit:
         if submit.strip().lower() == 'add':
