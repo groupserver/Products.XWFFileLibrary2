@@ -261,21 +261,27 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
             raise Unauthorized
         
         id = REQUEST.form.get('id', '')
-        object = self.find_files({'id': id})[0].getObject()
-         
-        # we call the index_html method of the file object, because that
-        # will handle all the nice things, like setting the correct
-        # content_type. It doesn't set the correct filename though,
-        # so we do that first.
-        filename = object.getProperty('filename', '').strip()
-        if not filename:
-            filename = object.getProperty('title')
+        files = self.find_files({'id': id})
+        if files:
+            object = files[0].getObject()
+             
+            # we call the index_html method of the file object, because
+            # that will handle all the nice things, like setting the
+            # correct content_type. It doesn't set the correct filename
+            # though, so we do that first.
+            filename = object.getProperty('filename', '').strip()
+            if not filename:
+                filename = object.getProperty('title')
 
-        self.REQUEST.RESPONSE.setHeader('Content-Disposition',
-                                        'inline; filename="%s"' % filename)
-        
-        return object.index_html(REQUEST, RESPONSE)
-
+            self.REQUEST.RESPONSE.setHeader('Content-Disposition',
+                                            'inline; filename="%s"' %\
+                                            filename)
+            
+            return object.index_html(REQUEST, RESPONSE)
+        else: # We could not find the file
+            uri = '/r/file-not-found?id=%s' % id
+            return self.REQUEST.RESPONSE.redirect(uri)
+            
     security.declareProtected('View', 'f')
     def f(self, REQUEST, RESPONSE):
         """ A really short name for a file, enabling fetching a file like:
