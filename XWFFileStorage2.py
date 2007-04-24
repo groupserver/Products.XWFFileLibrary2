@@ -87,6 +87,8 @@ class XWFFileStorage2(Folder):
                     id += '-%s' % id_hint.strip().join()
                 except:
                     pass
+        else:
+            id = id_hint
         
         XWFFile2.manage_addXWFFile2(self, id, file_object)
         
