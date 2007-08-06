@@ -363,6 +363,8 @@ class XWFFile2(CatalogAware, File):
         necessarily, but then we probably don't blow our DB out either.
         
         """
+        return '' ## --=mpj17=-- E V I L
+        
         converters = self.converters.get(getattr(self.aq_explicit, 'content_type', ''), (None, None))
         if converters[0]:
             data, encoding = converters[0].convert(self.data)[:5000]

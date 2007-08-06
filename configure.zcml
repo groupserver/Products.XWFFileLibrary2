@@ -28,6 +28,11 @@
       /> 
   
   <browser:resourceDirectory name="fileIcons"
-    directory="browser/images/fileIcons/16x16/" permission="zope2.Public" />
+    directory="browser/images/fileIcons/16x16/" 
+    permission="zope2.Public" />
+
+  <browser:resource name="whiteFileIconSprites.gif"
+    file="browser/images/fileIcons/file-icons.gif" 
+    permission="zope2.Public" />
 
 </configure>
