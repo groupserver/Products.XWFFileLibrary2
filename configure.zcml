@@ -27,8 +27,8 @@
       handler="Products.XWFFileLibrary2.XWFFile2.movedFile"
       /> 
   
-  <browser:resource name="whiteFileSprites-20070810.gif"
-    file="browser/images/fileIcons/file-icons.gif" 
+  <browser:resource name="whiteFileSprites-20070810.png"
+    file="browser/images/fileIcons/file-icons-20070810.png"
     permission="zope2.Public" />
 
 
