@@ -268,8 +268,9 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         if files:
             object = files[0].getObject()
             modification_time = object.modification_time()
+            # transform period from seconds into days
             public_access_period = float(getattr(self, 'public_access_period', 0))/86400.0
-            if modification_time <= (DateTime()+public_access_period):
+            if DateTime() < (modification_time+public_access_period):
                 public_access = True
             else:
                 public_access = False
