@@ -81,7 +81,7 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         {'id':'id_factory', 'type':'string', 'mode':'w'},
         {'id':'xwf_file_library_path', 'type':'string', 'mode':'w'},
         {'id':'ucid', 'type':'string', 'mode':'w'},
-        {'id':'public_access_period', 'type':'int', 'mode':w'}
+        {'id':'public_access_period', 'type':'int', 'mode':'w'}
         )
 
     def __init__(self, id, title=None):
