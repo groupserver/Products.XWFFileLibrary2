@@ -31,10 +31,12 @@ from types import *
 from Globals import InitializeClass, PersistentMapping
 from OFS.Folder import Folder
 from Products.XWFCore.XWFUtils import createBatch, removePathsFromFilenames, convertTextToAscii, convertTextToId, getNotificationTemplate
-
 from zLOG import LOG, INFO
 
 from urllib import quote, unquote
+
+from zope.interface import implements
+from interfaces import IXWFVirtualFileFolder
 
 _marker = []
 
@@ -50,6 +52,7 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         inside itself.
 
     """
+    implements( IXWFVirtualFileFolder )
     security = ClassSecurityInfo()
     
     meta_type = 'XWF Virtual Folder 2'

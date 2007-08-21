@@ -1,5 +1,10 @@
 from zope.interface import Interface, Attribute
 
+class IXWFVirtualFileFolder(Interface):
+    """ An folder which has views for displaying file searches.
+
+    """
+
 class IXWFFile2(Interface):
     """ A file, capable of writing itself out to disk, and storing 
     metadata in the ZODB
