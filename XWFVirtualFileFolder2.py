@@ -73,6 +73,7 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
 
     id_factory = 'IdFactory'
     id_namespace = 'http://xwft.org/namespaces/xwft/virtualfolder'
+    public_access_period = 0
 
     default_nsprefix = 'file'
     
