@@ -78,6 +78,7 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         {'id':'id_factory', 'type':'string', 'mode':'w'},
         {'id':'xwf_file_library_path', 'type':'string', 'mode':'w'},
         {'id':'ucid', 'type':'string', 'mode':'w'},
+        {'id':'public_access_period', 'type':'int', 'mode':w'}
         )
 
     def __init__(self, id, title=None):
@@ -88,6 +89,7 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         self.id = id
         self.title = title or id
         self.ucid = None
+        self.public_access_period = 0 # never publicly accessible, period is in seconds
 
     def __before_publishing_traverse__(self, self2, request):
         """ """
@@ -247,7 +249,7 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         
         return results
     
-    security.declareProtected('View', 'get_file')
+    security.declarePublic('get_file')
     def get_file(self, REQUEST, RESPONSE):
         """ """
         from zExceptions import Unauthorized
@@ -256,15 +258,27 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
             return self.OPTIONS(REQUEST, RESPONSE)
         elif REQUEST.get('REQUEST_METHOD') == 'PROPFIND':
             return self.PROPFIND(REQUEST, RESPONSE)
-        if not getSecurityManager().validate(None, self, None,
-                                             self.find_files, None):
-            raise Unauthorized
-        
+
         id = REQUEST.form.get('id', '')
         files = self.find_files({'id': id})
         if files:
             object = files[0].getObject()
-             
+            modification_time = object.modification_time()
+            public_access_period = float(self.getProperty('public_access_period', 0))/86400.0
+            if modification_time <= (DateTime()+public_access_period):
+                public_access = True
+            else:
+                public_access = False
+        else:
+            object = None
+            public_access = False
+
+        if (not public_access) and \
+           (not getSecurityManager().validate(None, self, None,
+                                             self.find_files, None)):
+            raise Unauthorized
+        
+        if object:
             # we call the index_html method of the file object, because
             # that will handle all the nice things, like setting the
             # correct content_type. It doesn't set the correct filename
@@ -272,16 +286,17 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
             filename = object.getProperty('filename', '').strip()
             if not filename:
                 filename = object.getProperty('title')
-
+            
             self.REQUEST.RESPONSE.setHeader('Content-Disposition',
                                             'inline; filename="%s"' %\
                                             filename)
-            
+
             return object.index_html(REQUEST, RESPONSE)
-        else: # We could not find the file
+        else:
+            # We could not find the file
             uri = '/r/file-not-found?id=%s' % id
             return self.REQUEST.RESPONSE.redirect(uri)
-            
+                    
     security.declareProtected('View', 'f')
     def f(self, REQUEST, RESPONSE):
         """ A really short name for a file, enabling fetching a file like:
