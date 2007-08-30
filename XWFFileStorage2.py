@@ -136,7 +136,8 @@ class XWFBTreeFileStorage2(BTreeFolder2):
         """ Given the ID of another storage, populate this storage.
 
         """
-        self._populateFromFolder(old_storage_id)
+        old_storage = getattr(context.aq_explicit, old_storage_id)
+        self._populateFromFolder(old_storage)
 
 Globals.InitializeClass(XWFFileStorage2)
 Globals.InitializeClass(XWFBTreeFileStorage2)
