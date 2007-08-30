@@ -32,6 +32,7 @@ from Globals import InitializeClass, PersistentMapping
 from OFS.Folder import Folder
 from Products.XWFCore.XWFUtils import createBatch, removePathsFromFilenames, convertTextToAscii, convertTextToId, getNotificationTemplate
 from zLOG import LOG, INFO
+from zExceptions import Unauthorized        
 
 from urllib import quote, unquote
 
@@ -252,12 +253,10 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         results = library.find_files(query)
         
         return results
-    
+
     security.declarePublic('get_file')
     def get_file(self, REQUEST, RESPONSE):
         """ """
-        from zExceptions import Unauthorized
-        
         if REQUEST.get('REQUEST_METHOD') == 'OPTIONS':
             return self.OPTIONS(REQUEST, RESPONSE)
         elif REQUEST.get('REQUEST_METHOD') == 'PROPFIND':
@@ -270,6 +269,7 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
             modification_time = object.modification_time()
             # transform period from seconds into days
             public_access_period = float(getattr(self, 'public_access_period', 0))/86400.0
+            
             if DateTime() < (modification_time+public_access_period):
                 public_access = True
             else:
@@ -278,9 +278,12 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
             object = None
             public_access = False
 
+        LOG('XWFVirtualFileFolder',INFO,'Public Access: %s' % public_access)
+
+        access = getSecurityManager().checkPermission('View', self)
+        LOG('XWFVirtualFileFolder',INFO,'has access: %s' % access)
         if (not public_access) and \
-           (not getSecurityManager().validate(None, self, None,
-                                             self.find_files, None)):
+           (not access):
             raise Unauthorized
         
         if object:
@@ -302,11 +305,15 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
             uri = '/r/file-not-found?id=%s' % id
             return self.REQUEST.RESPONSE.redirect(uri)
                     
-    security.declareProtected('View', 'f')
+    security.declarePublic('f')
     def f(self, REQUEST, RESPONSE):
         """ A really short name for a file, enabling fetching a file like:
             
                /SOMEFILESAREA/f/FILEID/FILE_NAME
+
+            Security is effectively handed off to get_file, so use extreme
+            caution.
+
         """
         fid = REQUEST.traverse_subpath[1]
         # a workaround for an odd bug
