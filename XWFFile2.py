@@ -294,6 +294,8 @@ class XWFFile2(CatalogAware, File):
         title = self.title
         tbits = title.split('/')
         title = ''.join(tbits[-1])
+
+        title = unicode(title, 'UTF-8', 'ignore')
         
         self.title = title
         
@@ -343,9 +345,6 @@ class XWFFile2(CatalogAware, File):
     def data(self):
         """  """
         return self.read(file_only=False)
-        #data, size = self._read_data(self.read(file_only=False))
-        #
-        #return data
     
     def modification_time(self):
         """ Return the modification time.
@@ -367,16 +366,16 @@ class XWFFile2(CatalogAware, File):
         if converters[0]:
             data, encoding = converters[0].convert(self.data)
             if encoding != 'UTF-8':
-                data = data.decode(encoding).encode('UTF-8')
+                data = unicode(data, 'UTF-8', 'ignore')
         else:
             data = self.data[:5000]
         
             data = XWFUtils.convertTextToAscii(data)
             
             try:
-                data = str(data.decode('UTF-8'))
+                data = unicode(data, 'UTF-8', 'ignore')
             except:
-                data = ''
+                data = u''
         
         data = data[:3000]
         
@@ -425,7 +424,11 @@ class XWFFile2(CatalogAware, File):
         """ Return a summary for indexing in the catalog.
 
         """
-        return self.getProperty('description', '')
+        description = self.getProperty('description', u'')
+        if not isinstance(description, unicode):
+            description = unicode(description, 'UTF-8', 'ignore')
+        
+        return description
     
     summary = indexable_summary
 
