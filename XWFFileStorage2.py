@@ -27,6 +27,8 @@ from OFS.SimpleItem import SimpleItem
 from OFS.Folder import Folder
 from OFS.PropertyManager import PropertyManager
 
+from Products.BTreeFolder2.BTreeFolder2 import BTreeFolder2
+
 import XWFFile2
 
 import ThreadLock, Globals, md5
@@ -128,8 +130,16 @@ class XWFFileStorage2(Folder):
             
         return True
         
+# BTreeFolder based storage
+class XWFBTreeFileStorage2(BTreeFolder2):    
+    def populate_storage_from_storage(self, old_storage_id):
+        """ Given the ID of another storage, populate this storage.
+
+        """
+        self._populateFromFolder(old_storage_id)
 
 Globals.InitializeClass(XWFFileStorage2)
+Globals.InitializeClass(XWFBTreeFileStorage2)
 
 #
 # Zope Management Methods
@@ -144,7 +154,7 @@ def manage_addXWFFileStorage2(self, id,
         
         UnitTest: TestXWFFileLibrary
     """
-    obj = XWFFileStorage2(id)
+    obj = XWFBTreeFileStorage2(id)
     self._setObject(id, obj)
     
     obj = getattr(self, id)
