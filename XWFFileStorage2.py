@@ -131,12 +131,18 @@ class XWFFileStorage2(Folder):
         return True
         
 # BTreeFolder based storage
-class XWFBTreeFileStorage2(BTreeFolder2):    
+class XWFBTreeFileStorage2(BTreeFolder2, XWFFileStorage2):
+    meta_type = 'XWF File Storage 2'
+    version = 0.9
+    def __init__(self, id):
+        BTreeFolder2.__init__(self, id)
+        XWFFileStorage2.__init__(self, id)
+
     def populate_storage_from_storage(self, old_storage_id):
         """ Given the ID of another storage, populate this storage.
 
         """
-        old_storage = getattr(context.aq_explicit, old_storage_id)
+        old_storage = getattr(self, old_storage_id)
         self._populateFromFolder(old_storage)
 
 Globals.InitializeClass(XWFFileStorage2)
