@@ -63,10 +63,6 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
                      ({'label': 'Configure',
                        'action': 'manage_configure'},)
     
-    manage_configure = PageTemplateFile('management/virtual_folder.zpt',
-                                        globals(),
-                                        __name__='manage_main')
-    
     printable_mimetypes = ('application/vnd.oasis.opendocument.spreadsheet',
                            'text/plain')
     
