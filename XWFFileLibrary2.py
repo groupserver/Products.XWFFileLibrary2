@@ -32,9 +32,6 @@ from Products.XWFCore.XWFCatalog import XWFCatalog
 from Products.XWFIdFactory.XWFIdFactoryMixin import XWFIdFactoryMixin
 from Products.ZCatalog.Catalog import CatalogError
 
-import logging
-logger = logging.getLogger()
-
 import ThreadLock, Globals, md5
 
 _thread_lock = ThreadLock.allocate_lock()
