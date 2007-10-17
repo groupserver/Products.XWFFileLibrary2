@@ -31,7 +31,6 @@ from types import *
 from Globals import InitializeClass, PersistentMapping
 from OFS.Folder import Folder
 from Products.XWFCore.XWFUtils import createBatch, removePathsFromFilenames, convertTextToAscii, convertTextToId, getNotificationTemplate
-from zLOG import LOG, INFO
 from zExceptions import Unauthorized        
 
 from urllib import quote, unquote
@@ -274,10 +273,7 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
             object = None
             public_access = False
 
-        LOG('XWFVirtualFileFolder',INFO,'Public Access: %s' % public_access)
-
         access = getSecurityManager().checkPermission('View', self)
-        LOG('XWFVirtualFileFolder',INFO,'has access: %s' % access)
         if (not public_access) and \
            (not access):
             raise Unauthorized
