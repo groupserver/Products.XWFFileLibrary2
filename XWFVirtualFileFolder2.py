@@ -202,25 +202,6 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         
         return result
     
-    def get_xml(self, set_top=0):
-        """ Generate an XML representation of this folder.
-        
-        """
-        num_files = len(self.find_files())
-        xml_stream = ['<%s:folder id="%s" %s:top="%s" %s:count="%s"' % (
-                                                   self.default_nsprefix,
-                                                   self.getId(),
-                                                   self.default_nsprefix,
-                                                   set_top,
-                                                   self.default_nsprefix,
-                                                   num_files)]
-        xa = xml_stream.append
-        xa('>')
-        
-        xa('</%s:folder>' % self.default_nsprefix)
-    
-        return '\n'.join(xml_stream)
-        
     security.declareProtected('View', 'find_files')
     def find_files(self, query={}):
         """ Perform a search against the files associated with this 
@@ -344,17 +325,6 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         
         return self.REQUEST.RESPONSE.redirect('view_files?message=show')
     
-    #   
-    # Views and Workflow
-    #
-    def index_html(self):
-        """ Return the default view.
-        
-        """
-        presentation = self.Presentation.Tofu.FileLibrary.xml
-        
-        return presentation.default()
-
     security.declarePublic('OPTIONS')        
     def OPTIONS(self, REQUEST, RESPONSE):
         """ Retrieve communication options.
@@ -377,22 +347,6 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         from zExceptions import MethodNotAllowed
         raise MethodNotAllowed, ('Method not supported for this resource.')
 	
-    def view_files(self, REQUEST, b_start=1, b_size=15,
-                         s_on='modification_time', s_order='desc'):
-        """ Return the files view.
-        
-        """
-        presentation = self.Presentation.Tofu.FileLibrary2.xml
-
-        topic = REQUEST.form.get('topic', '')
-
-        r = self.get_file_topics_tags(filter_topic=topic)
-        topics = r['topics']
-        tags = r['tags']
-        
-        return presentation.view_files(b_start=b_start, b_size=b_size, s_on=s_on,
-                                       s_order=s_order, topics=topics, tags=tags)
-    
     def pretty_size(self, size):
         """ Given a size, return a 'prettied' variation that most users will
         understand.
@@ -405,104 +359,6 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         else:
             return '%sMB' % (size/(1024*1024))
                                    
-    def pane_files(self, REQUEST, b_start=1, b_size=15,
-                         s_on='modification_time', s_order='desc',
-                         modification_time=None,
-                         topic=None,
-                         tags=None):
-        """ Return the files view.
-        
-        """
-        presentation = self.Presentation.Tofu.FileLibrary2.xml
-        
-        query = {}
-        if modification_time:
-            if modification_time == 'recent':
-                modification_stamp = DateTime()-0.25
-            elif modification_time == 'today':
-                modification_stamp = DateTime()-1.1
-            elif modification_time == 'yesterday':
-                modification_stamp = DateTime()-2.1
-            elif modification_time == 'week':
-                modification_stamp = DateTime()-8
-            elif modification_time == 'month':
-                modification_stamp = DateTime()-33
-            elif modification_time == 'year':
-                modification_stamp = DateTime()-367
-            else:
-                modification_stamp = 0
-                
-            query['modification_time'] = {'query': modification_stamp,
-                                          'range': 'min'}
-        if topic:
-            query['topic'] = topic
-        if tags:
-            query['tags'] = tags
-            
-        result_set = self.find_files(query)
-        
-        if 'hidden' not in tags:
-            result_set = filter(lambda x: 'hidden' not in x.tags, result_set) 
-                
-        result_set = sequence.sort(result_set,
-                                  (('modification_time', 'cmp', 'desc'),))
-        
-        (b_start, b_end, b_size,
-         result_size, result_set) = createBatch(result_set, b_start, b_size)
-        
-        return presentation.pane_files(result_set=result_set,
-                                       b_start=b_start+1, b_size=b_size,
-                                       b_end=b_end,
-                                       result_size=result_size)
-    
-    def cb_file_addFile(self, form):
-        topic = form.get('topic', '')
-        if type(topic) in (types.TupleType, types.ListType):
-            topic = filter(None, topic)
-            if not topic:
-                topic = ''
-            else:
-                topic = topic[0]
-        
-        rtags = form.get('tags', '')
-        tagparts = rtags.split('\n')
-        tags = []
-        for tag in tagparts:
-            tags.append(tag.strip().lower())
-            
-        security = getSecurityManager()
-        user = security.getUser()
-        if user:
-            creator = user.getId()
-        else:
-            creator = ''
-        
-        summary = form.get('summary','')
-
-        properties = {'topic': topic,
-                      'tags': tags,
-                      'dc_creator': creator,
-                      'description': summary}
-        
-        try:
-            file = self.add_file(form.get('file'), properties)
-        except XWFFileError, x:
-            message = '''<p>There was a problem adding the file: %s</p>''' % x
-            return {'message': message, 'error': True}
-        
-        sendEmailNotification = form.get('sendEmailNotification', 0)
-        try:
-            sendEmailNotification = int(sendEmailNotification) and True or False
-        except ValueError:
-            sendEmailNotification = True
-        
-        if sendEmailNotification:
-            self.send_notification(topic=topic, file=file)
-        
-        message = '''<p>Successfully added the file</p>'''
-        
-        return {'message': message}
-        
     def get_message_topics(self):
         """ Helper method for getting a list of topics to associate with.
         
@@ -566,19 +422,6 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         topics.sort()
         
         return topics
-        
-    def view_add_file(self):
-        """ Return the management view for adding a new file.
-        
-        """
-        # handle any data that may have been submitted
-        result = self.processForm()
-        
-        presentation = self.Presentation.Tofu.FileLibrary2.xml
-        
-        topics = self.get_message_topics()
-        
-        return presentation.view_add_file(result=result, topics=topics)
         
     def wf_convertFiletoXWFFile(self, old_file_object):
         """ Convert a regular file object to an XWF file object.
@@ -659,3 +502,4 @@ def initialize(context):
                       manage_addXWFVirtualFileFolder2),
         icon='icons/ic-virtualfolder.png'
         )
+
