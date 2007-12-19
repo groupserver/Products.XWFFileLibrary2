@@ -202,6 +202,25 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         
         return result
     
+    def get_xml(self, set_top=0):
+        """ Generate an XML representation of this folder.
+        
+        """
+        num_files = len(self.find_files())
+        xml_stream = ['<%s:folder id="%s" %s:top="%s" %s:count="%s"' % (
+                                                   self.default_nsprefix,
+                                                   self.getId(),
+                                                   self.default_nsprefix,
+                                                   set_top,
+                                                   self.default_nsprefix,
+                                                   num_files)]
+        xa = xml_stream.append
+        xa('>')
+        
+        xa('</%s:folder>' % self.default_nsprefix)
+    
+        return '\n'.join(xml_stream)
+        
     security.declareProtected('View', 'find_files')
     def find_files(self, query={}):
         """ Perform a search against the files associated with this 
@@ -309,7 +328,7 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         object.manage_changeProperties(tags=tags)
         object.reindex_object()
         
-        return self.REQUEST.RESPONSE.redirect('view_files?message=hide')
+        return 'Hidden %s' % id
     
     security.declareProtected('View', 'show_file')
     def show_file(self, id):
@@ -323,7 +342,7 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         object.manage_changeProperties(tags=tags)
         object.reindex_object()
         
-        return self.REQUEST.RESPONSE.redirect('view_files?message=show')
+        return 'Shown %s' % id
     
     security.declarePublic('OPTIONS')        
     def OPTIONS(self, REQUEST, RESPONSE):
@@ -359,70 +378,54 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         else:
             return '%sMB' % (size/(1024*1024))
                                    
-    def get_message_topics(self):
-        """ Helper method for getting a list of topics to associate with.
+    def cb_file_addFile(self, form):
+        topic = form.get('topic', '')
+        if type(topic) in (types.TupleType, types.ListType):
+            topic = filter(None, topic)
+            if not topic:
+                topic = ''
+            else:
+                topic = topic[0]
         
-        """
-        topics = []
-        if hasattr(self.aq_parent.aq_explicit, 'messages'):
-            rtopics = self.aq_parent.messages.thread_results({}, 1, 15, 'mailDate',
-                                                               'desc')[4]
-            for topic in rtopics:
-                if topic[0]:
-                    topics.append(topic[1][0]['mailSubject'])
-        topics.sort()
-        return topics
-        
-    def get_file_topics_tags(self, filter_topic=''):
-        """ Helper method for getting a list of topics and tags that are already associated
-            with a file.
-        
-        """
-        topics = []
+        rtags = form.get('tags', '')
+        tagparts = rtags.split('\n')
         tags = []
-        for f in self.find_files():
-            topic = None; tag = []
-            try:
-                topic = f['topic']
-            except:
-                pass
-            try:
-                tag = f['tags']
-            except:
-                pass
-        
-            if (filter_topic and topic == filter_topic) or not filter_topic:               
-                for t in tag:
-                    if t.strip() and t not in tags:
-                        tags.append(t)
+        for tag in tagparts:
+            tags.append(tag.strip().lower())
             
-            if topic and topic not in topics:
-                topics.append(topic)
+        security = getSecurityManager()
+        user = security.getUser()
+        if user:
+            creator = user.getId()
+        else:
+            creator = ''
         
-        topics.sort()
-        tags.sort()
-        
-        return {'topics': topics, 'tags': tags}
+        summary = form.get('summary','')
 
-    def get_file_topics(self):
-        """ Helper method for getting a list of topics that are already associated
-            with a file.
+        properties = {'topic': topic,
+                      'tags': tags,
+                      'dc_creator': creator,
+                      'description': summary}
         
-        """
-        topics = []
-        for f in self.find_files():
-            try:
-                topic = f['topic']
-                
-            except:
-                continue
-            if topic and topic not in topics:
-                topics.append(topic)
-                
-        topics.sort()
+        try:
+            file = self.add_file(form.get('file'), properties)
+        except XWFFileError, x:
+            message = '''<p>There was a problem adding the file: %s</p>''' % x
+            return {'message': message, 'error': True}
         
-        return topics
+        sendEmailNotification = form.get('sendEmailNotification', 0)
+        try:
+            sendEmailNotification = int(sendEmailNotification) and True or False
+        except ValueError:
+            sendEmailNotification = True
         
+        if sendEmailNotification:
+            self.send_notification(topic=topic, file=file)
+        
+        message = '''<p>Successfully added the file</p>'''
+        
+        return {'message': message}
+       
     def wf_convertFiletoXWFFile(self, old_file_object):
         """ Convert a regular file object to an XWF file object.
         
@@ -502,4 +505,3 @@ def initialize(context):
                       manage_addXWFVirtualFileFolder2),
         icon='icons/ic-virtualfolder.png'
         )
-
