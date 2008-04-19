@@ -33,8 +33,6 @@ import XWFFile2
 
 import ThreadLock, Globals, md5
 
-from zLOG import LOG, INFO
-
 _thread_lock = ThreadLock.allocate_lock()
 
 class XWFFileStorage2(Folder):
@@ -58,6 +56,7 @@ class XWFFileStorage2(Folder):
         self.id = id
     
     def get_baseFilesDir(self):
+        """ """
         return self.base_files_dir
     
     def test_addFile(self):

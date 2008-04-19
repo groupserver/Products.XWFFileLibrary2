@@ -277,7 +277,7 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         if (not public_access) and \
            (not access):
             raise Unauthorized
-        
+
         if object:
             # we call the index_html method of the file object, because
             # that will handle all the nice things, like setting the
@@ -291,7 +291,7 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
                                             'inline; filename="%s"' %\
                                             filename)
 
-            return object.index_html(REQUEST, RESPONSE)
+            return object.index_html(REQUEST, RESPONSE)            
         else:
             # We could not find the file
             uri = '/r/file-not-found?id=%s' % id

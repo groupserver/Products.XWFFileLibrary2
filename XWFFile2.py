@@ -36,7 +36,8 @@ from Products.XWFFileLibrary2.interfaces import IXWFFile2
 
 from mimetypes import MimeTypes
 
-from zLOG import LOG, INFO
+import logging
+log = logging.getLogger('XWFFile2')
 
 import xml.sax, cgi, tempfile
 import zipfile, cStringIO, string
@@ -83,10 +84,10 @@ class DataVirusCheckNullAdapter(object):
 try:
     import pyclamav
     DataVirusCheckAdapter = DataVirusCheckClamAVAdapter
-    LOG('XWFFile2',INFO,'found pyclamav, using clam av virus check adapter')
+    log.info('found pyclamav, using clam av virus check adapter')
 except:
     DataVirusCheckAdapter = DataVirusCheckNullAdapter
-    LOG('XWFFile2',INFO,'pyclamav not found, using null virus check adapter')
+    log.info('pyclamav not found, using null virus check adapter')
 
 class ootextHandler(ContentHandler):
 
@@ -169,7 +170,7 @@ class XWFFile2(CatalogAware, File):
     
     # base files dir
     _base_files_dir = ''
-    
+
     converters = {'application/vnd.oasis.opendocument.spreadsheet': (OOfficeConverter(), 'OpenOffice Spreadsheet')}
     
     def __init__(self, id):
@@ -180,7 +181,7 @@ class XWFFile2(CatalogAware, File):
         self.initProperties()
         File.__init__(self, id, id, '', '', '')
         self.update_data('','',0)
-    
+
     def initProperties(self):
         for prop in (('group_ids',[],'lines'),
                      ('topic', '', 'ustring'),
@@ -188,7 +189,16 @@ class XWFFile2(CatalogAware, File):
                      ('dc_creator', '', 'ustring'),
                      ('description', '', 'ustring')):
             self.manage_addProperty(*prop)
-    
+
+    def index_html(self, REQUEST, RESPONSE):
+        """ Override for File.index_html
+        """
+        # this is to deal with an acquisition issue, where
+        # the context gets lost when .data is called
+        self._base_files_dir = self.get_baseFilesDir()        
+
+        return File.index_html(self, REQUEST, RESPONSE)
+
     def _renderPageTemplateFile(self, filename, *args, **kws):
         """ Render a page template file, handling all the weird magic for us.
          
@@ -269,7 +279,7 @@ class XWFFile2(CatalogAware, File):
         passed, virus_name = DataVirusCheckAdapter( data ).process()
         
         if not passed:
-            LOG('XWFFile2',INFO,'found virus %s, rejecting file' % virus_name)
+            log.info('found virus %s, rejecting file' % virus_name)
             raise XWFFileError('found virus %s, rejecting file' % virus_name)
         
         # this isn't necessarily an error, on init we get called without data
@@ -330,7 +340,6 @@ class XWFFile2(CatalogAware, File):
         
         """
         id = os.path.join(self._base_files_dir, self.getId())
-        
         try:
             f = file(id)
         except:
@@ -400,24 +409,6 @@ class XWFFile2(CatalogAware, File):
         
         return data
         
-    #def summary(self):
-    #    """ Returns a shortened version of indexable_content for use
-    #    in the catalog metadata summary of a file.
-    #    
-    #    Basically we return either up to 500 characters or up to 50 words.
-    #    
-    #    """
-    #    content = self.indexable_content(escape=False)[:500]
-    #    words = content.split()
-    #    
-    #    strippedwords = ''
-    #    count = 0
-    #    for word in words:
-    #        if len(word) <= 25:
-    #            strippedwords += '%s ' % word
-    #    
-    #    return cgi.escape(strippedwords)
-    
     # for now we just use the description property, rather than trying to be 
     # tricky
     def indexable_summary(self):
