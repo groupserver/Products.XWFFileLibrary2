@@ -105,8 +105,8 @@ class XWFFileStorage2(Folder):
     def get_fileIds(self):
         """ Get all the file ids that we currently have in storage.
         
-        Obviously, this should be used sparingly with large numbers of files, and the
-        catalog should be used instead.
+        Obviously, this should be used sparingly with large numbers of files,
+        and the catalog should be used instead.
         
         """
         return self.objectIds('XWF File 2')
