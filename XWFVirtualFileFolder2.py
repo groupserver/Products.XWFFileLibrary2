@@ -337,7 +337,7 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
             # test that we're really an image
             elif content_type:
                 img = Image('img', 'img', data)
-                data = IGSImage(img).get_resized(width, height)
+                data = IGSImage(img).get_resized(width, height).index_html(REQUEST, RESPONSE)
                 log.info("Resized image")
                 
         return data
