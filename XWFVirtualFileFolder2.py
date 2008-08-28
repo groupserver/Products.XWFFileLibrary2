@@ -328,7 +328,8 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         
         data = self.get_file(REQUEST, RESPONSE)
         
-        if len(tsp) == 6 and tsp[2] == 'resize':
+        if len(tsp) in (6,7) and tsp[2] == 'resize':
+            width, height = tsp[3], tsp[4]
             content_type, img_width, img_height = getImageInfo(data)
             if content_type and width == img_width and height == img_height:
                 log.info("Not resizing image, existing height and width "
