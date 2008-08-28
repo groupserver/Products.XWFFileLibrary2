@@ -326,17 +326,16 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
             
         REQUEST.form['id'] = fid
         
-        f = self.get_file(REQUEST, RESPONSE)
+        data = self.get_file(REQUEST, RESPONSE)
         
         if len(tsp) == 6 and tsp[2] == 'resize':
-            width, height = int(tsp[3]), int(tsp[4])
-            content_type, img_width, img_height = getImageInfo(f)
+            content_type, img_width, img_height = getImageInfo(data)
             if content_type and width == img_width and height == img_height:
                 log.info("Not resizing image, existing height and width "
                          "were the same as requested size")
             # test that we're really an image
             elif content_type:
-                img = Image(f.getId(), f.title, f.data)
+                img = Image('img', 'img', data)
                 f = IGSImage(img).resize(width, height)
                 log.info("Resized image")
                 
