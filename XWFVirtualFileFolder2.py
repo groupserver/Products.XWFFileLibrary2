@@ -329,17 +329,18 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         data = self.get_file(REQUEST, RESPONSE)
         
         if len(tsp) in (5,6) and tsp[2] == 'resize':
-            width, height = tsp[3], tsp[4]
+            width, height = int(tsp[3]), int(tsp[4])
             content_type, img_width, img_height = getImageInfo(data)
             if content_type and width == img_width and height == img_height:
                 log.info("Not resizing image, existing height and width "
                          "were the same as requested size")
             # test that we're really an image
             elif content_type:
-                img = Image('img', 'img', data)
-                data = IGSImage(img).get_resized(width, height).index_html(REQUEST, RESPONSE)
-                log.info("Resized image")
-                
+                img = IGSImage(Image('img','img',data)).get_resized(width,
+                                                                    height)
+                log.info("Resized image to %sx%s" % (width, height))
+                data = img.index_html(REQUEST, RESPONSE)                
+
         return data
 
     security.declareProtected('View', 'hide_file')
