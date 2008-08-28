@@ -337,10 +337,10 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
             # test that we're really an image
             elif content_type:
                 img = Image('img', 'img', data)
-                f = IGSImage(img).resize(width, height)
+                data = IGSImage(img).resize(width, height)
                 log.info("Resized image")
                 
-        return f
+        return data
 
     security.declareProtected('View', 'hide_file')
     def hide_file(self, id):
