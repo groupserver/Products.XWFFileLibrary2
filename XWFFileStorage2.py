@@ -21,17 +21,14 @@ import os, time, Globals
 
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 
-from AccessControl import getSecurityManager, ClassSecurityInfo
-from Globals import InitializeClass, PersistentMapping
-from OFS.SimpleItem import SimpleItem
+from AccessControl import ClassSecurityInfo
 from OFS.Folder import Folder
-from OFS.PropertyManager import PropertyManager
 
 from Products.BTreeFolder2.BTreeFolder2 import BTreeFolder2
 
 import XWFFile2
 
-import ThreadLock, Globals, md5
+import ThreadLock
 
 _thread_lock = ThreadLock.allocate_lock()
 
@@ -172,8 +169,7 @@ def manage_addXWFFileStorage2(self, id,
             RESPONSE.redirect('%s/manage_main' % id)
 
 def initialize(context):
-    import os
-        # make sure the base file storage directory has been created
+    # make sure the base file storage directory has been created
     try:
         os.makedirs(XWFFileStorage2.base_files_dir, 0770)
     except OSError, x:

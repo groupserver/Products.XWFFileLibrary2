@@ -22,14 +22,12 @@ import os
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from Products.XWFCore import XWFUtils
 
-from AccessControl import getSecurityManager, ClassSecurityInfo
-from Globals import InitializeClass, PersistentMapping
+from AccessControl import ClassSecurityInfo
+from Globals import InitializeClass
 from OFS.Image import File, Pdata
-from Products.CustomProperties.CustomProperties import CustomProperties
 from Products.ZCatalog.CatalogPathAwareness import CatalogAware
 from Products.XWFCore import IXWFXml
-from types import *
-from Acquisition import aq_base, aq_parent, aq_inner, aq_acquire
+from types import * #@UnusedWildImport
 
 from zope.interface import implements
 from Products.XWFFileLibrary2.interfaces import IXWFFile2

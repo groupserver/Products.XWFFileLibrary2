@@ -17,22 +17,15 @@
 # You MUST follow the rules in http://iopen.net/STYLE before checking in code
 # to the trunk. Code which does not follow the rules will be rejected.  
 #
-import os, Globals
-
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 
-from AccessControl import getSecurityManager, ClassSecurityInfo
-from Globals import InitializeClass, PersistentMapping
-from OFS.SimpleItem import SimpleItem
+from AccessControl import ClassSecurityInfo
 from OFS.Folder import Folder
-from OFS.PropertyManager import PropertyManager
 
 from Products.XWFCore.XWFMetadataProvider import XWFMetadataProvider
-from Products.XWFCore.XWFCatalog import XWFCatalog
 from Products.XWFIdFactory.XWFIdFactoryMixin import XWFIdFactoryMixin
-from Products.ZCatalog.Catalog import CatalogError
 
-import Globals, md5
+import Globals
 
 class XWFFileLibraryError(Exception):
     pass
@@ -125,7 +118,6 @@ def manage_addXWFFileLibrary2(self, id,
             RESPONSE.redirect('%s/manage_main' % id)
 
 def initialize(context):
-    import os
     context.registerClass(
         XWFFileLibrary2,
         permission='Add XWF File Library 2',

@@ -17,26 +17,28 @@
 # You MUST follow the rules in http://iopen.net/STYLE before checking in code
 # to the trunk. Code which does not follow the rules will be rejected.
 #
-import os, Globals, smtplib, types
+import Globals, types
 
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from Products.XWFIdFactory.XWFIdFactoryMixin import XWFIdFactoryMixin
 from XWFFile2 import XWFFileError
 
-from DocumentTemplate import sequence
 from DateTime import DateTime        
-from Acquisition import aq_base
 from AccessControl import getSecurityManager, ClassSecurityInfo
-from types import *
-from Globals import InitializeClass, PersistentMapping
+from types import * #@UnusedWildImport
 from OFS.Folder import Folder
-from Products.XWFCore.XWFUtils import createBatch, removePathsFromFilenames, convertTextToAscii, convertTextToId, getNotificationTemplate
-from zExceptions import Unauthorized        
+from Products.XWFCore.XWFUtils import removePathsFromFilenames, convertTextToAscii
+from Products.XWFCore.XWFUtils import convertTextToId, getNotificationTemplate
+from Products.GSImage.interfaces import IGSImage
 
-from urllib import quote, unquote
+from zExceptions import Unauthorized        
+from OFS.Image import Image, getImageInfo
 
 from zope.interface import implements
 from interfaces import IXWFVirtualFileFolder
+
+import logging
+log = logging.getLogger('XWFFileLibrary2.XWFVirtualFileFolder2')
 
 _marker = []
 
@@ -272,7 +274,7 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         else:
             object = None
             public_access = False
-
+            
         access = getSecurityManager().checkPermission('View', self)
         if (not public_access) and \
            (not access):
@@ -305,16 +307,40 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
 
             Security is effectively handed off to get_file, so use extreme
             caution.
-
+            
+            Images may also be handled like this:
+            
+              /SOMEFILESAREA/f/FILEID/resize/WIDTH/HEIGHT/FILE_NAME
+              
+            eg.
+              /myfilearea/f/12211/resize/640/480/myimg.jpg
+            
         """
-        fid = REQUEST.traverse_subpath[1]
+        tsp = REQUEST.traverse_subpath
+        
+        fid = tsp[1]
         # a workaround for an odd bug
         if fid == 'f':
-            fid = REQUEST.traverse_subpath[2]
+            fid = tsp[2]
+            tsp.pop(1)
             
         REQUEST.form['id'] = fid
         
-        return self.get_file(REQUEST, RESPONSE)
+        f = self.get_file(REQUEST, RESPONSE)
+        
+        if len(tsp) == 6 and tsp[2] == 'resize':
+            width, height = int(tsp[3]), int(tsp[4])
+            content_type, img_width, img_height = getImageInfo(f)
+            if content_type and width == img_width and height == img_height:
+                log.info("Not resizing image, existing height and width "
+                         "were the same as requested size")
+            # test that we're really an image
+            elif content_type:
+                img = Image(f.getId(), f.title, f.data)
+                f = IGSImage(img).resize(width, height)
+                log.info("Resized image")
+                
+        return f
 
     security.declareProtected('View', 'hide_file')
     def hide_file(self, id):
@@ -365,7 +391,7 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         """
         from zExceptions import MethodNotAllowed
         raise MethodNotAllowed, ('Method not supported for this resource.')
-	
+    
     def pretty_size(self, size):
         """ Given a size, return a 'prettied' variation that most users will
         understand.
@@ -497,7 +523,6 @@ def manage_addXWFVirtualFileFolder2(self, id, title='',
             RESPONSE.redirect('%s/manage_main' % id)
 
 def initialize(context):
-    import os
     context.registerClass(
         XWFVirtualFileFolder2,
         permission='Add XWF Virtual Folder 2',
