@@ -328,7 +328,7 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         
         data = self.get_file(REQUEST, RESPONSE)
         
-        if len(tsp) in (6,7) and tsp[2] == 'resize':
+        if len(tsp) in (5,6) and tsp[2] == 'resize':
             width, height = tsp[3], tsp[4]
             content_type, img_width, img_height = getImageInfo(data)
             if content_type and width == img_width and height == img_height:
@@ -337,7 +337,7 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
             # test that we're really an image
             elif content_type:
                 img = Image('img', 'img', data)
-                data = IGSImage(img).resize(width, height)
+                data = IGSImage(img).get_resized(width, height)
                 log.info("Resized image")
                 
         return data
