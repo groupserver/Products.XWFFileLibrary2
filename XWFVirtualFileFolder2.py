@@ -29,7 +29,7 @@ from types import * #@UnusedWildImport
 from OFS.Folder import Folder
 from Products.XWFCore.XWFUtils import removePathsFromFilenames, convertTextToAscii
 from Products.XWFCore.XWFUtils import convertTextToId, getNotificationTemplate
-from Products.GSImage.interfaces import IGSImage
+from gs.image.interfaces import IGSImage
 
 from zExceptions import Unauthorized        
 from OFS.Image import Image, getImageInfo
