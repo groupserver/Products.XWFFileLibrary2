@@ -32,7 +32,7 @@ from Products.XWFCore.XWFUtils import convertTextToId, getNotificationTemplate
 from gs.image.interfaces import IGSImage
 
 from zExceptions import Unauthorized        
-from OFS.Image import Image, getImageInfo
+from zope.app.file.image import Image, getImageInfo
 
 from zope.interface import implements
 from zope.publisher.browser import BrowserView
