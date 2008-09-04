@@ -344,7 +344,7 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
             elif content_type:
                 img = IGSImage(Image(data)).get_resized(width,height)
                 log.info("Resized image to %sx%s" % (width, height))
-                data = DisplayFile(img, self.request).show()               
+                data = DisplayFile(img, REQUEST).show()               
 
         return data
 
