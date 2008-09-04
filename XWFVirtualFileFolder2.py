@@ -35,12 +35,18 @@ from zExceptions import Unauthorized
 from OFS.Image import Image, getImageInfo
 
 from zope.interface import implements
+from zope.publisher.browser import BrowserView
+from zope.app.file.browser.file import FileView
+
 from interfaces import IXWFVirtualFileFolder
 
 import logging
 log = logging.getLogger('XWFFileLibrary2.XWFVirtualFileFolder2')
 
 _marker = []
+
+class DisplayFile(FileView, BrowserView):
+    pass
 
 class XWFVirtualFileFolderError(Exception):
     pass
@@ -336,10 +342,9 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
                          "were the same as requested size")
             # test that we're really an image
             elif content_type:
-                img = IGSImage(Image('img','img',data)).get_resized(width,
-                                                                    height)
+                img = IGSImage(Image(data)).get_resized(width,height)
                 log.info("Resized image to %sx%s" % (width, height))
-                data = img.index_html(REQUEST, RESPONSE)                
+                data = DisplayFile(img, self.request).show()               
 
         return data
 
