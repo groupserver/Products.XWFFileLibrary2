@@ -25,6 +25,7 @@ from AccessControl import ClassSecurityInfo
 from OFS.Folder import Folder
 
 from Products.BTreeFolder2.BTreeFolder2 import BTreeFolder2
+from Products.XWFCore.XWFUtils import locateDataDirectory
 
 import XWFFile2
 
@@ -40,10 +41,9 @@ class XWFFileStorage2(Folder):
     
     meta_type = 'XWF File Storage 2'
     version = 0.9
-
-    base_files_dir = os.path.join(Globals.package_home(globals()),
-                                 'files')
-                                 
+    
+    base_files_dir = locateDataDirectory("groupserver.XWFFileLibrary2.storage")
+    
     def __init__(self, id):
         """ Initialise a new instance of XWFFileStorage.
             
