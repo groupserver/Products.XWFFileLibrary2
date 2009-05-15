@@ -185,7 +185,8 @@ class XWFFile2(CatalogAware, File):
                      ('topic', '', 'ustring'),
                      ('tags', [], 'ulines'),
                      ('dc_creator', '', 'ustring'),
-                     ('description', '', 'ustring')):
+                     ('description', '', 'ustring'),
+                     ('content-type', '', 'ustring')):
             self.manage_addProperty(*prop)
 
     def index_html(self, REQUEST, RESPONSE):
@@ -193,7 +194,9 @@ class XWFFile2(CatalogAware, File):
         """
         # this is to deal with an acquisition issue, where
         # the context gets lost when .data is called
-        self._base_files_dir = self.get_baseFilesDir()        
+        bfd = self.get_baseFilesDir()
+        if self._base_files_dir != bfd:
+            self._base_files_dir = bfd
 
         return File.index_html(self, REQUEST, RESPONSE)
 
