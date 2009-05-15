@@ -29,7 +29,7 @@ from types import * #@UnusedWildImport
 from OFS.Folder import Folder
 from Products.XWFCore.XWFUtils import removePathsFromFilenames, convertTextToAscii
 from Products.XWFCore.XWFUtils import convertTextToId, getNotificationTemplate
-from gs.image.interfaces import IGSImage
+from gs.image import GSImage
 
 from zExceptions import Unauthorized        
 from zope.app.file.image import Image, getImageInfo
@@ -342,7 +342,7 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
                          "were the same as requested size")
             # test that we're really an image
             elif content_type:
-                img = IGSImage(Image(data)).get_resized(width,height)
+                img = GSImage(data).get_resized(width,height)
                 log.info("Resized image to %sx%s" % (width, height))
                 data = DisplayFile(img, REQUEST).show()               
 
