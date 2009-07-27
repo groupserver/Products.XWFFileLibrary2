@@ -27,6 +27,7 @@ from Globals import InitializeClass
 from OFS.Image import File, Pdata
 from Products.ZCatalog.CatalogPathAwareness import CatalogAware
 from Products.XWFCore import IXWFXml
+from Products.XWFCore.XWFUtils import removePathsFromFilenames
 from types import * #@UnusedWildImport
 
 from zope.interface import implements
@@ -303,11 +304,8 @@ class XWFFile2(CatalogAware, File):
         
         # fix the title
         title = self.title
-        tbits = title.split('/')
-        title = ''.join(tbits[-1])
-
         title = unicode(title, 'UTF-8', 'ignore')
-        
+        title = removePathsFromFilenames(title)
         self.title = title
         
         if content_type != None:
