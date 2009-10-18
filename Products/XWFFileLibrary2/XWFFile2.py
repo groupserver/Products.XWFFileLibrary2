@@ -338,6 +338,7 @@ class XWFFile2(CatalogAware, File):
             like setting HTTP headers, or getting ranges from the file.
         
         """
+        log.info("Reading file from backend\n")
         id = os.path.join(self._base_files_dir, self.getId())
         try:
             f = file(id)
