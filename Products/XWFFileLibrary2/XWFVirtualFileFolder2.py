@@ -299,6 +299,18 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
                                             'inline; filename="%s"' %\
                                             filename)
 
+            # if we can use sendfile, we use that instead of returning
+            # the file through Zope
+            if REQUEST.has_key('X-Sendfile-Type'):
+                file_path = os.path.join(object.get_baseFilesDir(),
+                                         object.getId())
+                sendfile_header = REQUEST.get('X-Sendfile-Type')
+                RESPONSE.setHeader('Content-Type', object.content_type)
+                RESPONSE.setHeader(sendfile_header,
+                                   file_path)
+                # return *something* otherwise Apache mod_sendfile chokes
+                return object.content_type
+                                
             return object.index_html(REQUEST, RESPONSE)            
         else:
             # We could not find the file
