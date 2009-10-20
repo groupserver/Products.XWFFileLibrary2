@@ -26,6 +26,7 @@ from XWFFile2 import XWFFileError
 from DateTime import DateTime        
 from AccessControl import getSecurityManager, ClassSecurityInfo
 from types import * #@UnusedWildImport
+import os
 from OFS.Folder import Folder
 from Products.XWFCore.XWFUtils import removePathsFromFilenames, convertTextToAscii
 from Products.XWFCore.XWFUtils import convertTextToId, getNotificationTemplate
@@ -165,8 +166,8 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
                                       **properties)
         _file.reindex_object()
         
-        return _file
-        
+        return _file        
+
     def send_notification(self, topic='', file=None):
         """ Send a notification to the associated list when a file is 
         added.
@@ -258,7 +259,7 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         return results
 
     security.declarePublic('get_file')
-    def get_file(self, REQUEST, RESPONSE):
+    def get_file(self, REQUEST=None, RESPONSE=None, data_only=False):
         """ """
         if REQUEST.get('REQUEST_METHOD') == 'OPTIONS':
             return self.OPTIONS(REQUEST, RESPONSE)
@@ -301,10 +302,12 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
 
             # if we can use sendfile, we use that instead of returning
             # the file through Zope
-            if REQUEST.has_key('X-Sendfile-Type'):
+            sendfile_header = self.get_xsendfile_header(REQUEST,RESPONSE)
+            
+            if sendfile_header and not data_only:
+                log.info('Using x-sendfile')
                 file_path = os.path.join(object.get_baseFilesDir(),
                                          object.getId())
-                sendfile_header = REQUEST.get('X-Sendfile-Type')
                 RESPONSE.setHeader('Content-Type', object.content_type)
                 RESPONSE.setHeader(sendfile_header,
                                    file_path)
@@ -317,6 +320,15 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
             uri = '/r/file-not-found?id=%s' % id
             return self.REQUEST.RESPONSE.redirect(uri)
                     
+    def get_xsendfile_header(self, REQUEST, RESPONSE):
+        sendfile_header = None
+        if REQUEST.has_key('X-Sendfile-Type'):
+            sendfile_header = REQUEST.get('X-Sendfile-Type')
+        elif REQUEST.has_key('HTTP_X_SENDFILE_TYPE'):
+            sendfile_header = REQUEST.get('HTTP_X_SENDFILE_TYPE')
+        
+        return sendfile_header
+
     security.declarePublic('f')
     def f(self, REQUEST, RESPONSE):
         """ A really short name for a file, enabling fetching a file like:
@@ -344,9 +356,9 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
             
         REQUEST.form['id'] = fid
         
-        data = self.get_file(REQUEST, RESPONSE)
-        
         if len(tsp) in (5,6) and tsp[2] == 'resize':
+            # we set data_only=True in case the backend uses sendfile
+            data = self.get_file(REQUEST, RESPONSE, data_only=True)
             width, height = int(tsp[3]), int(tsp[4])
             content_type, img_width, img_height = getImageInfo(data)
             if content_type and width == img_width and height == img_height:
@@ -354,9 +366,28 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
                          "were the same as requested size")
             # test that we're really an image
             elif content_type:
-                img = GSImage(data).get_resized(width,height)
-                log.info("Resized image to %sx%s" % (width, height))
-                data = DisplayFile(img, REQUEST).show()               
+                # if we can use sendfile, we use that instead of returning
+                # the file through Zope
+                sendfile_header = self.get_xsendfile_header(REQUEST, RESPONSE)
+
+                if sendfile_header:
+                    log.info('Using x-sendfile')
+                    # if we are going to use sendfile, we can either
+                    # return the cached image, or return the original image,
+                    # depending on whether we actually resized it
+                    cache_path = GSImage(data).get_resized(width,height,
+                                                    return_cache_path=True)
+                    if cache_path:
+                        RESPONSE.setHeader(sendfile_header,
+                                           cache_path)
+                        data = 'image'
+                    else:
+                        data = self.get_file(REQUEST, RESPONSE)
+                else:
+                    img = GSImage(data).get_resized(width,height)
+                    data = DisplayFile(img, REQUEST).show()               
+        else:
+            data = self.get_file(REQUEST, RESPONSE)
 
         return data
 
