@@ -385,6 +385,9 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
                         data = self.get_file(REQUEST, RESPONSE)
                 else:
                     img = GSImage(data).get_resized(width,height)
+                    if not img:
+                      img = GSImage(data)
+                    assert img, 'There is no image to display'
                     data = DisplayFile(img, REQUEST).show()               
         else:
             data = self.get_file(REQUEST, RESPONSE)
