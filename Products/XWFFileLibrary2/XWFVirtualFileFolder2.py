@@ -168,49 +168,6 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         
         return _file        
 
-    def send_notification(self, topic='', file=None):
-        """ Send a notification to the associated list when a file is 
-        added.
-        
-        """
-        security = getSecurityManager()
-        user = security.getUser()
-        messages = getattr(self.aq_parent, 'messages', None)
-        # we don't have an associated messages, so don't send anything
-        if not messages:
-            return False
-        
-        if not topic:
-            topic = 'A new file was added'
-        
-        group_object = self.Scripts.get.group_object()
-        # we don't actually seem to be a group, so don't send anything
-        if not group_object:
-            return False
-        
-        group_id = group_object.getId()
-
-        template = getNotificationTemplate(self, 'new_file', group_id)
-        if not template:
-            return False
-        
-        email_addresses = user.get_preferredEmailAddresses()
-        if not email_addresses:
-            return False
-        
-        email_address = email_addresses[0]
-        
-        list_manager = messages.get_xwfMailingListManager()
-        for list_id in messages.getProperty('xwf_mailing_list_ids', []):        
-            curr_list = list_manager.get_list(list_id)
-            message = template(self, self.REQUEST, from_addr=email_address,
-                                 n_type='new_file', n_id=group_id,
-                                 subject=topic, group=group_object, list_object=curr_list,
-                                 user=user, file=file)        
-            result = curr_list.manage_listboxer({'Mail': message})
-        
-        return result
-    
     def get_xml(self, set_top=0):
         """ Generate an XML representation of this folder.
         
@@ -455,54 +412,6 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
             return '%sKB' % (size/1024)
         else:
             return '%sMB' % (size/(1024*1024))
-                                   
-    def cb_file_addFile(self, form):
-        topic = form.get('topic', '')
-        if type(topic) in (types.TupleType, types.ListType):
-            topic = filter(None, topic)
-            if not topic:
-                topic = ''
-            else:
-                topic = topic[0]
-        
-        rtags = form.get('tags', '')
-        tagparts = rtags.split('\n')
-        tags = []
-        for tag in tagparts:
-            tags.append(tag.strip().lower())
-            
-        security = getSecurityManager()
-        user = security.getUser()
-        if user:
-            creator = user.getId()
-        else:
-            creator = ''
-        
-        summary = form.get('summary','')
-
-        properties = {'topic': topic,
-                      'tags': tags,
-                      'dc_creator': creator,
-                      'description': summary}
-        
-        try:
-            file = self.add_file(form.get('file'), properties)
-        except XWFFileError, x:
-            message = '''<p>There was a problem adding the file: %s</p>''' % x
-            return {'message': message, 'error': True}
-        
-        sendEmailNotification = form.get('sendEmailNotification', 0)
-        try:
-            sendEmailNotification = int(sendEmailNotification) and True or False
-        except ValueError:
-            sendEmailNotification = True
-        
-        if sendEmailNotification:
-            self.send_notification(topic=topic, file=file)
-        
-        message = '''<p>Successfully added the file</p>'''
-        
-        return {'message': message}
        
     def wf_convertFiletoXWFFile(self, old_file_object):
         """ Convert a regular file object to an XWF file object.
