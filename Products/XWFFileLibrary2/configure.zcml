@@ -13,17 +13,17 @@
            class="Products.XWFFileLibrary2.XWFVirtualFileFolder2.XWFVirtualFileFolder2" />
     <subscriber
       for="Products.XWFFileLibrary2.interfaces.IXWFFile2
-           zope.app.event.interfaces.IObjectCopiedEvent"
+           zope.lifecycleevent.interfaces.IObjectCopiedEvent"
       handler="Products.XWFFileLibrary2.XWFFile2.copiedFile"
       />
     <subscriber
       for="Products.XWFFileLibrary2.interfaces.IXWFFile2
-           zope.app.container.interfaces.IObjectAddedEvent"
+           zope.lifecycleevent.interfaces.IObjectAddedEvent"
       handler="Products.XWFFileLibrary2.XWFFile2.addedFile"
       /> 
     <subscriber
       for="Products.XWFFileLibrary2.interfaces.IXWFFile2
-           zope.app.container.interfaces.IObjectMovedEvent"
+           zope.lifecycleevent.interfaces.IObjectMovedEvent"
       handler="Products.XWFFileLibrary2.XWFFile2.movedFile"
       /> 
   
