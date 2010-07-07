@@ -29,10 +29,6 @@ from Products.XWFCore.XWFUtils import locateDataDirectory
 
 import XWFFile2
 
-import ThreadLock
-
-_thread_lock = ThreadLock.allocate_lock()
-
 class XWFFileStorage2(Folder):
     """ The basic implementation for a file storage under XWFFileLibrary.
 
