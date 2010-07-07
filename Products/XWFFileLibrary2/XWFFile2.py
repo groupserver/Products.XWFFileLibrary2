@@ -18,6 +18,11 @@
 # to the trunk. Code which does not follow the rules will be rejected.  
 #
 import os
+try:
+    # 2.12+
+    from zope.container.interfaces import IObjectRemovedEvent,IObjectAddedEvent
+except ImportError:
+    from zope.app.container.interfaces import IObjectRemovedEvent,IObjectAddedEvent
 
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from Products.XWFCore import XWFUtils
@@ -131,7 +136,6 @@ def removedFile(ob, event):
     filepath = os.path.join(ob._base_files_dir, ob.getId())
     os.remove(filepath)
 
-from zope.app.container.interfaces import IObjectRemovedEvent,IObjectAddedEvent
 def movedFile(ob, event):
     """A File was moved in the storage.
     
