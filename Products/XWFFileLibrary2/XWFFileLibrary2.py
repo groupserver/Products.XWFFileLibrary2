@@ -72,14 +72,11 @@ class XWFFileLibrary2(Folder, XWFMetadataProvider, XWFIdFactoryMixin):
         
         """
         storages = self.objectValues('XWF File Storage 2')
-        
         if not storage_id and storages:
             return storages[0]
-        
         for storage in storages:
             if storage.getId() == storage_id:
                 return storage
-        
         return None
     
     def find_files(self, query):
