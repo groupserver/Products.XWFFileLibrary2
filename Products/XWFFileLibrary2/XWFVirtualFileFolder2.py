@@ -19,7 +19,7 @@
 #
 import types
 
-from AccessControl.class_init import InitializeClass
+from App.class_init import InitializeClass
 
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from Products.XWFIdFactory.XWFIdFactoryMixin import XWFIdFactoryMixin

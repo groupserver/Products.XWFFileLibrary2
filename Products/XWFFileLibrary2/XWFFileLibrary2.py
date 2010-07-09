@@ -25,7 +25,7 @@ from OFS.Folder import Folder
 from Products.XWFCore.XWFMetadataProvider import XWFMetadataProvider
 from Products.XWFIdFactory.XWFIdFactoryMixin import XWFIdFactoryMixin
 
-from AccessControl.class_init import InitializeClass
+from App.class_init import InitializeClass
 
 class XWFFileLibraryError(Exception):
     pass

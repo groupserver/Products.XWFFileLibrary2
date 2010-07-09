@@ -28,7 +28,7 @@ from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from Products.XWFCore import XWFUtils
 
 from AccessControl import ClassSecurityInfo
-from AccessControl.class_init import InitializeClass
+from App.class_init import InitializeClass
 from OFS.Image import File, Pdata
 from Products.ZCatalog.CatalogPathAwareness import CatalogAware
 from Products.XWFCore import IXWFXml
@@ -159,21 +159,14 @@ class XWFFile2(CatalogAware, File):
     
     """
     security = ClassSecurityInfo()
-    
-    __implements__ = (IXWFXml.IXmlProducer,)
-    implements(IXWFFile2)
-
-
+    implements(IXWFXml.IXmlProducer, IXWFFile2)
     manage_options = File.manage_options + \
                      ({'label': 'Reindex',
                        'action': 'reindex_file'},)
-    
     meta_type = 'XWF File 2'
     version = 0.1
-    
     # base files dir
     _base_files_dir = ''
-
     converters = {'application/vnd.oasis.opendocument.spreadsheet': (OOfficeConverter(), 'OpenOffice Spreadsheet')}
     
     def __init__(self, id):

@@ -18,7 +18,7 @@
 # to the trunk. Code which does not follow the rules will be rejected.  
 #
 import os, time
-from AccessControl.class_init import InitializeClass
+from App.class_init import InitializeClass
 
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 
