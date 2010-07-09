@@ -17,7 +17,8 @@
 # You MUST follow the rules in http://iopen.net/STYLE before checking in code
 # to the trunk. Code which does not follow the rules will be rejected.  
 #
-import os, time, Globals
+import os, time
+from AccessControl.class_init import InitializeClass
 
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 
@@ -137,8 +138,8 @@ class XWFBTreeFileStorage2(BTreeFolder2, XWFFileStorage2):
         old_storage = getattr(self, old_storage_id)
         self._populateFromFolder(old_storage)
 
-Globals.InitializeClass(XWFFileStorage2)
-Globals.InitializeClass(XWFBTreeFileStorage2)
+InitializeClass(XWFFileStorage2)
+InitializeClass(XWFBTreeFileStorage2)
 
 #
 # Zope Management Methods

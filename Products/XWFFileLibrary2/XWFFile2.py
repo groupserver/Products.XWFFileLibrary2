@@ -28,7 +28,7 @@ from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from Products.XWFCore import XWFUtils
 
 from AccessControl import ClassSecurityInfo
-from Globals import InitializeClass
+from AccessControl.class_init import InitializeClass
 from OFS.Image import File, Pdata
 from Products.ZCatalog.CatalogPathAwareness import CatalogAware
 from Products.XWFCore import IXWFXml

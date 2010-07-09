@@ -25,7 +25,7 @@ from OFS.Folder import Folder
 from Products.XWFCore.XWFMetadataProvider import XWFMetadataProvider
 from Products.XWFIdFactory.XWFIdFactoryMixin import XWFIdFactoryMixin
 
-import Globals
+from AccessControl.class_init import InitializeClass
 
 class XWFFileLibraryError(Exception):
     pass
@@ -93,7 +93,7 @@ class XWFFileLibrary2(Folder, XWFMetadataProvider, XWFIdFactoryMixin):
         # restricting the results here anyway
         return catalog.unrestrictedSearchResults(query)
     
-Globals.InitializeClass(XWFFileLibrary2)
+InitializeClass(XWFFileLibrary2)
 #
 # Zope Management Methods
 #

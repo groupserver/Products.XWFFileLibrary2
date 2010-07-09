@@ -17,7 +17,9 @@
 # You MUST follow the rules in http://iopen.net/STYLE before checking in code
 # to the trunk. Code which does not follow the rules will be rejected.
 #
-import Globals, types
+import types
+
+from AccessControl.class_init import InitializeClass
 
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from Products.XWFIdFactory.XWFIdFactoryMixin import XWFIdFactoryMixin
@@ -457,7 +459,7 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
                                                               self._version,
                                                               currversion)
 
-Globals.InitializeClass(XWFVirtualFileFolder2)
+InitializeClass(XWFVirtualFileFolder2)
 #
 # Zope Management Methods
 #
