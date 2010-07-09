@@ -70,7 +70,6 @@ class XWFFileStorage2(Folder):
         
             UnitTest: TestXWFFileLibrary.test_4_addRemoveFiles
         """
-            (self, id_hint, force_id)
         if id_hint and force_id:
             id = id_hint
         else:
