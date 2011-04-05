@@ -91,7 +91,7 @@ try:
     log.info('found pyclamav, using clam av virus check adapter')
 except:
     DataVirusCheckAdapter = DataVirusCheckNullAdapter
-    log.info('pyclamav not found, using null virus check adapter')
+    log.warn('pyclamav not found, using null virus check adapter')
 
 class ootextHandler(ContentHandler):
 
@@ -278,7 +278,7 @@ class XWFFile2(CatalogAware, File):
         passed, virus_name = DataVirusCheckAdapter( data ).process()
         
         if not passed:
-            log.info('found virus %s, rejecting file' % virus_name)
+            log.warn('found virus %s, rejecting file' % virus_name)
             raise XWFFileError('found virus %s, rejecting file' % virus_name)
         
         # this isn't necessarily an error, on init we get called without data
@@ -335,7 +335,7 @@ class XWFFile2(CatalogAware, File):
             like setting HTTP headers, or getting ranges from the file.
         
         """
-        log.info("Reading file from backend\n")
+        log.debug("Reading file from backend\n")
         id = os.path.join(self._base_files_dir, self.getId())
         try:
             f = file(id)

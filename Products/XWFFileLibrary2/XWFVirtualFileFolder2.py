@@ -264,7 +264,7 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
             sendfile_header = self.get_xsendfile_header(REQUEST,RESPONSE)
             
             if sendfile_header and not data_only:
-                log.info('Using x-sendfile')
+                log.debug('Using x-sendfile')
                 file_path = os.path.join(object.get_baseFilesDir(),
                                          object.getId())
                 RESPONSE.setHeader('Content-Type', object.content_type)
@@ -321,7 +321,7 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
             width, height = int(tsp[3]), int(tsp[4])
             content_type, img_width, img_height = getImageInfo(data)
             if content_type and width == img_width and height == img_height:
-                log.info("Not resizing image, existing height and width "
+                log.debug("Not resizing image, existing height and width "
                          "were the same as requested size")
             # test that we're really an image
             elif content_type:
@@ -330,7 +330,7 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
                 sendfile_header = self.get_xsendfile_header(REQUEST, RESPONSE)
 
                 if sendfile_header:
-                    log.info('Using x-sendfile')
+                    log.debug('Using x-sendfile')
                     # if we are going to use sendfile, we can either
                     # return the cached image, or return the original image,
                     # depending on whether we actually resized it
