@@ -36,7 +36,6 @@ from gs.image import GSImage
 
 from zExceptions import Unauthorized
 from zope.app.file.image import Image, getImageInfo
-from zope.cachedescriptors.property import Lazy
 
 from zope.interface import implements
 from zope.publisher.browser import BrowserView
@@ -344,9 +343,10 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
             # that error would confuse the admins. Instead we will show
             # a page that explains what is going on.
             self.REQUEST.form['q'] = self.REQUEST.URL
-            ctx = self.Scripts.get.group_object().messages
+            self.REQUEST.form['f'] = self.REQUEST.form.get('id', '')
+            ctx = self.Scripts.get.group_object().files
             retval = getMultiAdapter((ctx, self.REQUEST),
-                                        name="post_hidden.html")()
+                                        name="file_hidden.html")()
             return retval
         
         assert data, 'The "data" is not set.'        

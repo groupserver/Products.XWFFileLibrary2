@@ -1,0 +1,62 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+  metal:use-macro="context/@@groupserver_layout/page">
+  <head>
+  	<title metal:fill-slot="title">
+      Hidden File (410):
+      <span tal:replace="view/siteInfo/name"/>
+    </title>
+    <tal:block metal:fill-slot="metadata">
+      <link rel="home" 
+        tal:attributes="title string:${view/siteInfo/name} Homepage;
+        href view/siteInfo/url" />
+      <link rel="help" 
+        tal:attributes="title string:${view/siteInfo/name} Help;"
+        href="/help"/>
+    </tal:block>
+  </head>
+  <body>
+    <div metal:fill-slot="body" id="hidden-file-page"
+      tal:define="siteId view/siteInfo/id;
+        gse python:modules['Products.XWFCore.XWFUtils'].get_support_email;
+        supportEmail python:gse(context,siteId);">
+      <h1>Hidden File</h1>
+      <!--Appologise, and state what went wrong -->
+      <p>
+        Sorry, but the file you want to see is hidden.
+        The reason that 
+        <a class="fn" href="#"
+          tal:attributes="href view/details/adminInfo/url"
+          tal:content="view/details/adminInfo/name">an admin</a> 
+        gave for hiding the file is as follows.
+      </p>
+      <blockquote>
+        <p tal:content="view/details/reason">
+          Too many turtles.
+        </p>
+      </blockquote>
+      <!-- Give a detailed explanation about what went wrong, and -->
+      <!--   what can be done.-->
+      <p>
+        The file can now only be seen by the administrators and the
+        author of the file.
+        If you think you should be able to see the file
+        <a href="#"
+          tal:define="m string:Hi! I wanted to see the file ${view/requested} but it is hidden. I think I should be allowed to see the file because...;
+            msg python:view.quote(m)"
+          tal:attributes="href string:mailto:${supportEmail}?subject=Hidden%20File&amp;body=${msg}"
+          class="email">email support</a> 
+        and we will see what we can do to help.
+      </p>
+      <!--Lastly, give the technical details about the error. Bots may-->
+      <!--find this useful.-->
+      <p id="technical">Technical Description:
+        <code class="error"><span class="val">410</span>
+          <span class="description">Gone</span></code>;
+        <span class="detail">ID: 
+          <code class="val"
+            tal:content="view/fileId">File ID</code>
+      </p>
+    </div>
+  </body>
+</html>
+
