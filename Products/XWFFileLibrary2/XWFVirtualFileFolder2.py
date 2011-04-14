@@ -34,14 +34,18 @@ from Products.XWFCore.XWFUtils import removePathsFromFilenames, convertTextToAsc
 from Products.XWFCore.XWFUtils import convertTextToId, getNotificationTemplate
 from gs.image import GSImage
 
-from zExceptions import Unauthorized        
+from zExceptions import Unauthorized
 from zope.app.file.image import Image, getImageInfo
+from zope.cachedescriptors.property import Lazy
 
 from zope.interface import implements
 from zope.publisher.browser import BrowserView
 from zope.app.file.browser.file import FileView
 
 from interfaces import IXWFVirtualFileFolder
+from queries import FileQuery
+from error import Hidden
+from zope.component import getMultiAdapter
 
 import logging
 log = logging.getLogger('XWFFileLibrary2.XWFVirtualFileFolder2')
@@ -217,6 +221,14 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         
         return results
 
+    def fileQuery(self):
+        context = self.get_xwfFileLibrary()
+        da = context.zsqlalchemy
+        assert da
+        retval = FileQuery(context, da)
+        assert retval
+        return retval
+
     security.declarePublic('get_file')
     def get_file(self, REQUEST=None, RESPONSE=None, data_only=False):
         """ """
@@ -240,12 +252,16 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         else:
             object = None
             public_access = False
-            
+        
+        
         access = getSecurityManager().checkPermission('View', self)
-        if (not public_access) and \
-           (not access):
+        if ((not public_access) and (not access)):
             raise Unauthorized
-
+        
+        if self.fileQuery().file_hidden(id):
+            raise Hidden(id)
+        # assert ((public_access or access) and not(hidden))
+        
         if object:
             # we call the index_html method of the file object, because
             # that will handle all the nice things, like setting the
@@ -315,9 +331,26 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
             
         REQUEST.form['id'] = fid
         
+        try:
+            if len(tsp) in (5,6) and tsp[2] == 'resize':
+                # we set data_only=True in case the backend uses sendfile
+                data = self.get_file(REQUEST, RESPONSE, data_only=True)
+            else:
+                data = self.get_file(REQUEST, RESPONSE)
+        except Hidden, h:
+            # --=mpj17=-- The post that includes this file is hidden. 
+            # By extension, this means the file is hidden. We *could*
+            # just pass up a zExceptions.Unauthorized error up, but
+            # that error would confuse the admins. Instead we will show
+            # a page that explains what is going on.
+            self.REQUEST.form['q'] = self.REQUEST.URL
+            ctx = self.Scripts.get.group_object().messages
+            retval = getMultiAdapter((ctx, self.REQUEST),
+                                        name="post_hidden.html")()
+            return retval
+        
+        assert data, 'The "data" is not set.'        
         if len(tsp) in (5,6) and tsp[2] == 'resize':
-            # we set data_only=True in case the backend uses sendfile
-            data = self.get_file(REQUEST, RESPONSE, data_only=True)
             width, height = int(tsp[3]), int(tsp[4])
             content_type, img_width, img_height = getImageInfo(data)
             if content_type and width == img_width and height == img_height:
@@ -348,9 +381,6 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
                         data = DisplayFile(img, REQUEST).show()               
                     else:
                         data = self.get_file(REQUEST, RESPONSE)
-        else:
-            data = self.get_file(REQUEST, RESPONSE)
-
         return data
 
     security.declareProtected('View', 'hide_file')
