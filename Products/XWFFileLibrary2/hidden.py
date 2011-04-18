@@ -30,9 +30,7 @@ class FileHidden(BaseErrorPage):
 
     @Lazy
     def details(self):
-        print 'file id %s' % self.fileId
         postId = self.query.postId_from_fileId(self.fileId)
-        print 'post Id %s' % postId
         retval = HiddenPostInfo(self.context, postId)
         return retval
 
