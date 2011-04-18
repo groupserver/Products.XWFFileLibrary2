@@ -1,3 +1,4 @@
+# coding=utf-8
 # Copyright (C) 2003,2004 IOPEN Technologies Ltd.
 #
 # This program is free software; you can redistribute it and/or
@@ -252,15 +253,14 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
             object = None
             public_access = False
         
-        
         access = getSecurityManager().checkPermission('View', self)
         if ((not public_access) and (not access)):
             raise Unauthorized
-        
+
         if self.fileQuery().file_hidden(id):
             raise Hidden(id)
         # assert ((public_access or access) and not(hidden))
-        
+
         if object:
             # we call the index_html method of the file object, because
             # that will handle all the nice things, like setting the
@@ -269,15 +269,12 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
             filename = object.getProperty('filename', '').strip()
             if not filename:
                 filename = object.getProperty('title')
-            
             self.REQUEST.RESPONSE.setHeader('Content-Disposition',
                                             'inline; filename="%s"' %\
                                             filename)
-
             # if we can use sendfile, we use that instead of returning
             # the file through Zope
             sendfile_header = self.get_xsendfile_header(REQUEST,RESPONSE)
-            
             if sendfile_header and not data_only:
                 log.debug('Using x-sendfile')
                 file_path = os.path.join(object.get_baseFilesDir(),
@@ -287,13 +284,19 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
                                    file_path)
                 # return *something* otherwise Apache mod_sendfile chokes
                 return object.content_type
-                                
-            return object.index_html(REQUEST, RESPONSE)            
+            # not(sendfile_header) or data_only
+            # --=mpj17=-- I do not pretend to understand what is going 
+            #   on in this method. However, I do know that sometimes the
+            #   "index_html" is false (with a small f) when the cast of 
+            #   the "object" to a string *is* data. Is this a security 
+            #   hole?
+            return object.index_html(REQUEST, RESPONSE) or str(object)
         else:
             # We could not find the file
             uri = '/r/file-not-found?id=%s' % id
             return self.REQUEST.RESPONSE.redirect(uri)
-                    
+        assert False, 'How did I get here?'
+
     def get_xsendfile_header(self, REQUEST, RESPONSE):
         sendfile_header = None
         if REQUEST.has_key('X-Sendfile-Type'):
@@ -349,7 +352,7 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
                                         name="file_hidden.html")()
             return retval
         
-        assert data, 'The "data" is not set.'        
+        assert data, 'The "data" is not set for %s.' % fid
         if len(tsp) in (5,6) and tsp[2] == 'resize':
             width, height = int(tsp[3]), int(tsp[4])
             content_type, img_width, img_height = getImageInfo(data)
