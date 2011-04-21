@@ -37,8 +37,6 @@
       <!-- Give a detailed explanation about what went wrong, and -->
       <!--   what can be done.-->
       <p>
-        The file can now only be seen by the administrators and the
-        author of the file.
         If you think you should be able to see the file
         <a href="#"
           tal:define="m string:Hi! I wanted to see the file ${view/requested} but it is hidden. I think I should be allowed to see the file because...;
