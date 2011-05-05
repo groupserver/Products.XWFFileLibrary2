@@ -16,7 +16,7 @@ class FileQuery(object):
         s.append_whereclause(ft.c.file_id == fileId)
         s.append_whereclause(pt.c.post_id == ft.c.post_id)
         
-        retval = True # A bit harsh
+        retval = False # Old files have no post, so can never be hidden.
         r = s.execute()
         if r.rowcount == 1:
             row = r.fetchone()
