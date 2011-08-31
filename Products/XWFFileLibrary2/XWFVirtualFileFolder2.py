@@ -84,7 +84,7 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
 
     id_factory = 'IdFactory'
     id_namespace = 'http://xwft.org/namespaces/xwft/virtualfolder'
-    public_access_period = 0
+    public_access_period = 259200
 
     default_nsprefix = 'file'
     
@@ -104,7 +104,9 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         self.id = id
         self.title = title or id
         self.ucid = None
-        self.public_access_period = 0 # never publicly accessible, period is in seconds
+       
+        # period in seconds, defaults to 72 hours
+        self.public_access_period = 259200
 
     def __before_publishing_traverse__(self, self2, request):
         """ """
