@@ -23,6 +23,10 @@ setup(name='Products.XWFFileLibrary2',
       zip_safe=False,
       install_requires=[
           'setuptools',
+          'gs.database',
+          'gs.errormessage',
+          'gs.group.messages.post',
+          'gs.image',
           # -*- Extra requirements: -*-
       ],
       entry_points="""
