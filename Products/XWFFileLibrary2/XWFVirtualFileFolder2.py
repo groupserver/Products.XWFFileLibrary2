@@ -225,9 +225,7 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
 
     def fileQuery(self):
         context = self.get_xwfFileLibrary()
-        da = context.zsqlalchemy
-        assert da
-        retval = FileQuery(context, da)
+        retval = FileQuery(context)
         assert retval
         return retval
 

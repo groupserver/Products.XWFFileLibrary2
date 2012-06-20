@@ -36,9 +36,7 @@ class FileHidden(BaseErrorPage):
 
     @Lazy
     def query(self):
-        da = self.context.zsqlalchemy
-        assert da
-        retval = FileQuery(self.context, da)
+        retval = FileQuery(self.context)
         assert retval
         return retval
 
