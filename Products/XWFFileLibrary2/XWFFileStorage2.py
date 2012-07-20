@@ -27,6 +27,7 @@ from OFS.Folder import Folder
 
 from Products.BTreeFolder2.BTreeFolder2 import BTreeFolder2
 from Products.XWFCore.XWFUtils import locateDataDirectory
+from Products.XWFFileLibrary2.fingerprint import fingerprint_data
 
 import XWFFile2
 
@@ -53,39 +54,19 @@ class XWFFileStorage2(Folder):
         """ """
         return self.base_files_dir
     
-    def test_addFile(self):
-        """ Test adding a file.
-        
-        """
-        import StringIO
-        f = StringIO.StringIO('hello, this is a test')
-        return os.path.join(self.base_files_dir, self.add_file(f))
-        
-    def add_file(self, file_object, id_hint=None, force_id=None):
-        """ Add a new file to the file storage, returning a reference to the file's ID as
-        it was stored.
-        
-            Takes a file object, which must support the same methods as the built
-            in 'file' object (namely, it must support the 'read' method).
-        
-            UnitTest: TestXWFFileLibrary.test_4_addRemoveFiles
+    def add_file(self, data, id_hint=None, force_id=None):
+        """ Add a new file to the file storage, returning a reference to the 
+            file's ID as it was stored.
+       
+            Takes raw data. Previously this method required a file object.
+ 
         """
         if id_hint and force_id:
             id = id_hint
         else:
-            # get the next unique ID from the File Library container
-            try:
-                incid = str(self.get_nextId())
-            except Exception, x:
-                raise
-            isotimestamp = time.strftime('%Y-%m-%dT%H%M%SZ', time.gmtime())
-            id = '%s-%s' % (incid, isotimestamp)
-            if id_hint:
-                try:
-                    id += '-%s' % id_hint.strip().join()
-                except:
-                    pass
-        XWFFile2.manage_addXWFFile2(self, id, file_object)
+            id = fingerprint_data(data)
+        
+        XWFFile2.manage_addXWFFile2(self, id, data)
         return id
         
     def get_file(self, id):

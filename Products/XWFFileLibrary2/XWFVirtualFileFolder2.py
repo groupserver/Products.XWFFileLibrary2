@@ -23,7 +23,6 @@ import types
 from App.class_init import InitializeClass
 
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
-from Products.XWFIdFactory.XWFIdFactoryMixin import XWFIdFactoryMixin
 from XWFFile2 import XWFFileError
 
 from DateTime import DateTime        
@@ -58,7 +57,7 @@ class DisplayFile(FileView, BrowserView):
 class XWFVirtualFileFolderError(Exception):
     pass
 
-class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
+class XWFVirtualFileFolder2(Folder):
     """ A folder for virtualizing file library content.
     
         When content is 'added' to a 'VirtualFileFolder' the content object
@@ -82,8 +81,6 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
     
     xwf_file_library_path = 'FileLibrary2'
 
-    id_factory = 'IdFactory'
-    id_namespace = 'http://xwft.org/namespaces/xwft/virtualfolder'
     public_access_period = 259200
 
     default_nsprefix = 'file'
@@ -147,54 +144,6 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
 
         return library
 
-    def add_file(self, file_object, properties={}):
-        """ Add a file to the appropriate file library, returning a
-        reference to the file for further manipulation, after we add ourselves
-        to the files virtual path.
-        
-        """
-        library = self.get_xwfFileLibrary()
-        if not library:
-            raise XWFVirtualFileFolderError, 'No XWF File Library found'
-            
-        storage = library.get_fileStorage()
-        
-        filename = getattr(file_object, 'filename', '')
-        fname = convertTextToAscii(removePathsFromFilenames(filename))
-        
-        id = storage.add_file(file_object, fname)
-        
-        _file = storage.get_file(id)
-                
-        group_object = self.Scripts.get.group_object()
-        group_ids = group_object and [group_object.getId()] or []
-        
-        _file.manage_changeProperties(group_ids=group_ids,
-                                      title=fname,
-                                      **properties)
-        _file.reindex_object()
-        
-        return _file        
-
-    def get_xml(self, set_top=0):
-        """ Generate an XML representation of this folder.
-        
-        """
-        num_files = len(self.find_files())
-        xml_stream = ['<%s:folder id="%s" %s:top="%s" %s:count="%s"' % (
-                                                   self.default_nsprefix,
-                                                   self.getId(),
-                                                   self.default_nsprefix,
-                                                   set_top,
-                                                   self.default_nsprefix,
-                                                   num_files)]
-        xa = xml_stream.append
-        xa('>')
-        
-        xa('</%s:folder>' % self.default_nsprefix)
-    
-        return '\n'.join(xml_stream)
-        
     security.declareProtected('View', 'find_files')
     def find_files(self, query={}):
         """ Perform a search against the files associated with this 
@@ -448,26 +397,6 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         else:
             return '%sMB' % (size/(1024*1024))
        
-    def wf_convertFiletoXWFFile(self, old_file_object):
-        """ Convert a regular file object to an XWF file object.
-        
-        """
-        import StringIO
-        from Acquisition import aq_get
-
-        f = StringIO.StringIO(old_file_object.data)
-        owner = aq_get(old_file_object, '_owner', None, 1)
-        
-        _file = self.add_file(f)
-        _file.manage_changeProperties({'title': old_file_object.getId(),
-                                       'dc+Creator': owner[1]})
-        _file.changeOwnership(self.acl_users.getUser(owner[1]))
-        _file.content_type = old_file_object.content_type
-        _file.set_modificationTime(old_file_object.bobobase_modification_time())
-        _file.reindex_object()
-        
-        return 1
-        
     def printable_summary(self, result):
         """ Given a result, determine if the summary is actually printable or
         not. If so, return the summary, otherwise return None.
@@ -475,23 +404,6 @@ class XWFVirtualFileFolder2(Folder, XWFIdFactoryMixin):
         """
         return result.indexable_summary
         
-        
-    security.declareProtected('Upgrade objects', 'upgrade')
-    security.setPermissionDefault('Upgrade objects', ('Manager', 'Owner'))
-    def upgrade(self):
-        """ Upgrade to the latest version.
-            
-        """
-        currversion = getattr(self, '_version', 0)
-        if currversion == self.version:
-            return 'already running latest version (%s)' % currversion
-
-        self._version = self.version
-        
-        return 'upgraded %s to version %s from version %s' % (self.getId(),
-                                                              self._version,
-                                                              currversion)
-
 InitializeClass(XWFVirtualFileFolder2)
 #
 # Zope Management Methods

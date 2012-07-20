@@ -22,9 +22,6 @@ from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from AccessControl import ClassSecurityInfo
 from OFS.Folder import Folder
 
-from Products.XWFCore.XWFMetadataProvider import XWFMetadataProvider
-from Products.XWFIdFactory.XWFIdFactoryMixin import XWFIdFactoryMixin
-
 from App.class_init import InitializeClass
 
 class XWFFileLibraryError(Exception):
@@ -33,7 +30,7 @@ class XWFFileLibraryError(Exception):
 class Record:
     pass
 
-class XWFFileLibrary2(Folder, XWFMetadataProvider, XWFIdFactoryMixin):
+class XWFFileLibrary2(Folder):
     """ A searchable, self indexing file library.
 
     """

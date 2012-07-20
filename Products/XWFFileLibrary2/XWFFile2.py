@@ -31,7 +31,6 @@ from AccessControl import ClassSecurityInfo
 from App.class_init import InitializeClass
 from OFS.Image import File, Pdata
 from Products.ZCatalog.CatalogPathAwareness import CatalogAware
-from Products.XWFCore import IXWFXml
 from Products.XWFCore.XWFUtils import removePathsFromFilenames
 from types import * #@UnusedWildImport
 
@@ -159,7 +158,7 @@ class XWFFile2(CatalogAware, File):
     
     """
     security = ClassSecurityInfo()
-    implements(IXWFXml.IXmlProducer, IXWFFile2)
+    implements(IXWFFile2)
     manage_options = File.manage_options + \
                      ({'label': 'Reindex',
                        'action': 'reindex_file'},)
@@ -207,56 +206,6 @@ class XWFFile2(CatalogAware, File):
                      args,
                      kws)   
 
-    def get_xml(self):
-        """ Get an XML representation of the file object.
-        
-        """
-        xml_stream = ['<%s:file id="%s" ' % (self.default_nsprefix,
-                                             self.getId())]
-        xa = xml_stream.append
-        
-        prefixnsmap = self.get_metadataFullPrefixNSMap()
-        
-        for prefix in prefixnsmap.keys():
-            ns = prefixnsmap[prefix]
-            if not prefix: prefix = self.default_nsprefix
-            
-            xa('xmlns:%s="%s"' % (prefix,ns))
-        xa('>')
-        xa(self.get_xmlMetadataElements(self.default_nsprefix))
-        
-        xa('</%s:file>' % self.default_nsprefix)
-    
-        return '\n'.join(xml_stream)
-        
-    def get_xmlMetadataElements(self, default_ns=''):
-        """ 
-        
-        """
-        xml_stream = []
-        element_template = '<%(metadata_id)s>%(metadata_value)s</%(metadata_id)s>'
-        # fetch the dict of all possible metadata types in this filelibrary
-        metadata_set = self.get_metadataIndexMap()
-        for key in metadata_set.keys():
-            value = getattr(self, key, None) or self.getProperty(key, None) 
-            if value:
-                if callable(value):
-                    value = value()
-                if default_ns and len(key.split('+')) == 1:
-                    key = '%(default_ns)s:%(key)s' % locals()
-                
-                if type(value) in (ListType, TupleType):
-                    values = value
-                else:
-                    values = (str(value),)
-                
-                for val in values:
-                    if not val: continue
-                    key = ':'.join(key.split('+'))
-                    xml_stream.append(element_template % {'metadata_id': key,
-                                                          'metadata_value': val})
-        return '\n'.join(xml_stream)
-        
     def write(self, file_object):
         """ Write the file data to our backend, given an object with a 'file'
         like interface (primarily it must support the 'read' interface).
