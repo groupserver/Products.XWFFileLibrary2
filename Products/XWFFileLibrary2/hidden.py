@@ -25,7 +25,7 @@ class FileHidden(BaseErrorPage):
     def __call__(self, *args, **kw):
         contentType = 'text/html; charset=UTF-8'
         self.request.response.setHeader('Content-Type', contentType)
-        self.request.response.setStatus(410, lock=True)
+        self.request.response.setStatus(410)
         return self.index(self, *args, **kw)
 
     @Lazy
