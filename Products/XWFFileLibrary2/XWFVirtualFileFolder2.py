@@ -304,7 +304,7 @@ class XWFVirtualFileFolder2(Folder):
         
         if not data: 
             log.warn("No data found for %s." % fid)
-            raise NotFound(self, fid, self.request)
+            raise NotFound(self, fid, self.REQUEST)
 
         if len(tsp) in (5,6) and tsp[2] == 'resize':
             width, height = int(tsp[3]), int(tsp[4])
