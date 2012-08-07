@@ -45,6 +45,7 @@ from interfaces import IXWFVirtualFileFolder
 from queries import FileQuery
 from error import Hidden
 from zope.component import getMultiAdapter
+from zope.publisher.interfaces import NotFound
 
 import logging
 log = logging.getLogger('XWFFileLibrary2.XWFVirtualFileFolder2')
@@ -301,7 +302,10 @@ class XWFVirtualFileFolder2(Folder):
                                         name="file_hidden.html")()
             return retval
         
-        assert data, 'The "data" is not set for %s.' % fid
+        if not data: 
+            log.warn("No data found for %s." % fid)
+            raise NotFound(self, fid, self.request)
+
         if len(tsp) in (5,6) and tsp[2] == 'resize':
             width, height = int(tsp[3]), int(tsp[4])
             content_type, img_width, img_height = getImageInfo(data)
