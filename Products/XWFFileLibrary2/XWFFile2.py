@@ -23,10 +23,10 @@ from mimetypes import MimeTypes
 import os
 import string
 import tempfile
+from types import *
 import xml.sax
 import zipfile
 from xml.sax.handler import ContentHandler
-# from types import * #@UnusedWildImport
 
 #lint:disable
 try:
