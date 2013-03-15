@@ -25,11 +25,12 @@ from App.class_init import InitializeClass
 from DateTime import DateTime  # --=mpj17=-- FIXME? datetime.datetime?
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from OFS.Folder import Folder
-from zExceptions import Unauthorized
 from zope.app.file.image import getImageInfo
-from zope.interface import implements
+from zope.cachedescriptors.property import Lazy
 from zope.component import getMultiAdapter
+from zope.interface import implements
 from zope.publisher.interfaces import NotFound
+from zope.security.interfaces import Unauthorized
 from Products.XWFCore.XWFUtils import convertTextToAscii
 from Products.XWFCore.XWFUtils import convertTextToId
 from error import Hidden
@@ -84,13 +85,13 @@ class XWFVirtualFileFolder2(Folder):
         {'id': 'public_access_period', 'type': 'int', 'mode': 'w'}
        )
 
-    def __init__(self, id, title=None):
+    def __init__(self, folderId, title=None):
         """ Initialise a new instance of XWFVirtualFileFolder.
 
         """
-        self.__name__ = id
-        self.id = id
-        self.title = title or id
+        self.__name__ = folderId
+        self.id = folderId
+        self.title = title or folderId
         self.ucid = None
 
         # period in seconds, defaults to 72 hours
@@ -107,33 +108,10 @@ class XWFVirtualFileFolder2(Folder):
             path[:] = []
         request.set('traverse_subpath', subpath)
 
-    def processForm(self):
-        """ Process an XForms submission.
-
-        """
-        result = {}
-
-        form = self.REQUEST.form
-        result['form'] = form
-
-        if not form.get('submitted', False):
-            return result
-
-        submit = form.get('__submit__')
-        model, submission = submit.split('+')
-        model = form.get('model_override', model)
-
-        cb = getattr(self, 'cb_%s_%s' % (model, submission))
-
-        return cb(form)
-
     def get_xwfFileLibrary(self):
-        """ Get the reference to the xwfFileLibrary we are associated with.
-
-        """
-        library = self.restrictedTraverse(self.xwf_file_library_path)
-
-        return library
+        """ Get the reference to the xwfFileLibrary we are associated with."""
+        retval = self.restrictedTraverse(self.xwf_file_library_path)
+        return retval
 
     security.declareProtected('View', 'find_files')
 
@@ -154,26 +132,29 @@ class XWFVirtualFileFolder2(Folder):
 
         """
         library = self.get_xwfFileLibrary()
-
-        # group_object = self.Scripts.get.group_object()
-        group_object = self.aq_parent
-        group_ids = group_object and [group_object.getId()] or []
-
+        groupObj = self.aq_parent
+        group_ids = groupObj and [groupObj.getId()] or []
         query['group_ids'] = group_ids
-
         results = library.find_files(query)
         return results
 
+    @Lazy
     def fileQuery(self):
-        context = self.get_xwfFileLibrary()
-        retval = FileQuery(context)
-        assert retval
+        retval = FileQuery()
         return retval
 
     def get_file_by_id(self, fileId):
-        l = self.get_xwfFileLibrary()
-        s = l.get_fileStorage()
-        retval = getattr(s, fileId, None)
+        fileInfo = self.fileQuery.file_info(fileId)
+        groupId = self.aq_parent.getId()
+        if fileInfo is None:
+            raise NotFound(self, fileId)
+        elif fileInfo['group_id'] != groupId:
+            m = u'The file {0} is not in the group {1}'
+            raise Unauthorized(m.format(fileId, groupId))
+        else:
+            l = self.get_xwfFileLibrary()
+            s = l.get_fileStorage()
+            retval = s.get_file(fileId)
         return retval
 
     security.declarePublic('get_file')
@@ -203,9 +184,10 @@ class XWFVirtualFileFolder2(Folder):
 
         access = getSecurityManager().checkPermission('View', self)
         if ((not public_access) and (not access)):
-            raise Unauthorized
+            m = u'You do not have permission to view the file {0}'
+            raise Unauthorized(m.format(fileId))
 
-        if self.fileQuery().file_hidden(fileId):
+        if self.fileQuery.file_hidden(fileId):
             raise Hidden(fileId)
         # assert ((public_access or access) and not(hidden))
 
