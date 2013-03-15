@@ -28,25 +28,20 @@ from OFS.Folder import Folder
 from zExceptions import Unauthorized
 from zope.app.file.image import getImageInfo
 from zope.interface import implements
-from zope.publisher.browser import BrowserView
-from zope.app.file.browser.file import FileView
 from zope.component import getMultiAdapter
 from zope.publisher.interfaces import NotFound
 from Products.XWFCore.XWFUtils import convertTextToAscii
 from Products.XWFCore.XWFUtils import convertTextToId
-from gs.image import GSImage
 from error import Hidden
+from image import ImageHandler, SquareImageHandler
 from interfaces import IXWFVirtualFileFolder
 from queries import FileQuery
+from requestinfo import RequestInfo
 
 import logging
 log = logging.getLogger('XWFFileLibrary2.XWFVirtualFileFolder2')
 
 _marker = []
-
-
-class DisplayFile(FileView, BrowserView):
-    pass
 
 
 class XWFVirtualFileFolderError(Exception):
@@ -167,13 +162,18 @@ class XWFVirtualFileFolder2(Folder):
         query['group_ids'] = group_ids
 
         results = library.find_files(query)
-
         return results
 
     def fileQuery(self):
         context = self.get_xwfFileLibrary()
         retval = FileQuery(context)
         assert retval
+        return retval
+
+    def get_file_by_id(self, fileId):
+        l = self.get_xwfFileLibrary()
+        s = l.get_fileStorage()
+        retval = getattr(s, fileId, None)
         return retval
 
     security.declarePublic('get_file')
@@ -186,9 +186,9 @@ class XWFVirtualFileFolder2(Folder):
             return self.PROPFIND(REQUEST, RESPONSE)
 
         fileId = REQUEST.form.get('id', '')
-        files = self.find_files({'id': fileId})
-        if files:
-            fileObject = files[0].getObject()
+        fileObject = self.get_file_by_id(fileId)
+
+        if fileObject:
             modification_time = fileObject.modification_time()
             # transform period from seconds into days
             p = getattr(self, 'public_access_period', 0)
@@ -199,7 +199,6 @@ class XWFVirtualFileFolder2(Folder):
             else:
                 public_access = False
         else:
-            fileObject = None
             public_access = False
 
         access = getSecurityManager().checkPermission('View', self)
@@ -242,8 +241,7 @@ class XWFVirtualFileFolder2(Folder):
             return fileObject.index_html(REQUEST, RESPONSE) or str(fileObject)
         else:
             # We could not find the file
-            uri = '/r/file-not-found?id=%s' % fileId
-            return self.REQUEST.RESPONSE.redirect(uri)
+            raise NotFound(self, fileId, REQUEST)
         assert False, 'How did I get here?'
 
     def get_xsendfile_header(self, REQUEST, RESPONSE):
@@ -273,18 +271,10 @@ class XWFVirtualFileFolder2(Folder):
               /myfilearea/f/12211/resize/640/480/myimg.jpg
 
         """
-        tsp = REQUEST.traverse_subpath
-
-        fid = tsp[1]
-        # a workaround for an odd bug
-        if fid == 'f':
-            fid = tsp[2]
-            tsp.pop(1)
-
-        REQUEST.form['id'] = fid
-
+        requestInfo = RequestInfo(REQUEST)
+        REQUEST.form['id'] = requestInfo.fileId
         try:
-            if len(tsp) in (5, 6) and tsp[2] == 'resize':
+            if (requestInfo.isSquare or requestInfo.isResize):
                 # we set data_only=True in case the backend uses sendfile
                 data = self.get_file(REQUEST, RESPONSE, data_only=True)
             else:
@@ -307,37 +297,24 @@ class XWFVirtualFileFolder2(Folder):
             log.warn("No data found for %s." % fid)
             raise NotFound(self, fid, self.REQUEST)
 
-        if len(tsp) in (5, 6) and tsp[2] == 'resize':
-            width, height = int(tsp[3]), int(tsp[4])
+        if requestInfo.isImageRequest:
             content_type, img_width, img_height = getImageInfo(data)
-            if content_type and width == img_width and height == img_height:
-                log.debug("Not resizing image, existing height and width "
-                         "were the same as requested size")
-            # test that we're really an image
-            elif content_type:
-                # if we can use sendfile, we use that instead of returning
-                # the file through Zope
+            if (content_type):  # Check to see if we are actually and image
                 sendfile_header = self.get_xsendfile_header(REQUEST, RESPONSE)
+                if ((requestInfo.width == img_width)
+                    and (requestInfo.height == img_height)):
+                    log.debug("Not resizing image, existing height and width "
+                                 "were the same as requested size")
+                elif requestInfo.isResize:
+                    handler = ImageHandler(requestInfo.width,
+                                            requestInfo.height, sendfile_header)
+                    img = handler.get_image_response(data, REQUEST, RESPONSE)
+                elif requestInfo.isSquare:
+                    handler = SquareImageHandler(requestInfo.squareSize,
+                                                    sendfile_header)
+                    img = handler.get_image_response(data, REQUEST, RESPONSE)
+            data = img if img is not None else data
 
-                if sendfile_header:
-                    log.debug('Using x-sendfile')
-                    # if we are going to use sendfile, we can either
-                    # return the cached image, or return the original image,
-                    # depending on whether we actually resized it
-                    cache_path = GSImage(data).get_resized(width, height,
-                                                    return_cache_path=True)
-                    if cache_path:
-                        RESPONSE.setHeader(sendfile_header,
-                                           cache_path)
-                        data = 'image'
-                    else:
-                        data = self.get_file(REQUEST, RESPONSE)
-                else:
-                    img = GSImage(data).get_resized(width, height)
-                    if img:
-                        data = DisplayFile(img, REQUEST).show()
-                    else:
-                        data = self.get_file(REQUEST, RESPONSE)
         return data
 
     security.declareProtected('View', 'hide_file')
