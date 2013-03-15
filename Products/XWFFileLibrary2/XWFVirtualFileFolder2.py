@@ -27,7 +27,7 @@ from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from OFS.Folder import Folder
 from zope.app.file.image import getImageInfo
 from zope.cachedescriptors.property import Lazy
-from zope.component import getMultiAdapter
+from zope.component import createObject, getMultiAdapter
 from zope.interface import implements
 from zope.publisher.interfaces import NotFound
 from zope.security.interfaces import Unauthorized
@@ -97,6 +97,8 @@ class XWFVirtualFileFolder2(Folder):
         # period in seconds, defaults to 72 hours
         self.public_access_period = 259200
 
+        self.groupInfo = createObject('groupserver.GroupInfo', self)
+
     def __before_publishing_traverse__(self, self2, request):
         """ """
         path = request['TraversalRequestNameStack']
@@ -132,9 +134,8 @@ class XWFVirtualFileFolder2(Folder):
 
         """
         library = self.get_xwfFileLibrary()
-        groupObj = self.aq_parent
-        group_ids = groupObj and [groupObj.getId()] or []
-        query['group_ids'] = group_ids
+        groupInfo = createObject('groupserver.GroupInfo', self)
+        query['group_ids'] = [groupInfo.id] if groupInfo else []
         results = library.find_files(query)
         return results
 
@@ -143,14 +144,16 @@ class XWFVirtualFileFolder2(Folder):
         retval = FileQuery()
         return retval
 
+    security.declarePublic('get_file_by_id')
+
     def get_file_by_id(self, fileId):
         fileInfo = self.fileQuery.file_info(fileId)
-        groupId = self.aq_parent.getId()
+        groupInfo = createObject('groupserver.GroupInfo', self)
         if fileInfo is None:
             raise NotFound(self, fileId)
-        elif fileInfo['group_id'] != groupId:
+        elif fileInfo['group_id'] != groupInfo.id:
             m = u'The file {0} is not in the group {1}'
-            raise Unauthorized(m.format(fileId, groupId))
+            raise Unauthorized(m.format(fileId, groupInfo.id))
         else:
             l = self.get_xwfFileLibrary()
             s = l.get_fileStorage()
