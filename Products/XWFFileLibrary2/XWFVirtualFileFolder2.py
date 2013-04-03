@@ -279,6 +279,7 @@ class XWFVirtualFileFolder2(Folder):
             return retval
 
         if not data:
+            fid = self.REQUEST.form.get('id', '')
             log.warn("No data found for %s." % fid)
             raise NotFound(self, fid, self.REQUEST)
 
