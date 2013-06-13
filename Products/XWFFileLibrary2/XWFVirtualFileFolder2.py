@@ -97,7 +97,10 @@ class XWFVirtualFileFolder2(Folder):
         # period in seconds, defaults to 72 hours
         self.public_access_period = 259200
 
-        self.groupInfo = createObject('groupserver.GroupInfo', self)
+    @Lazy
+    def groupInfo(self):
+        retval = createObject('groupserver.GroupInfo', self)
+        return retval
 
     def __before_publishing_traverse__(self, self2, request):
         """ """
