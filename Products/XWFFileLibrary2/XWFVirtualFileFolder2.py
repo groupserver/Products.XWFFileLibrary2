@@ -89,15 +89,18 @@ class XWFVirtualFileFolder2(Folder):
         """ Initialise a new instance of XWFVirtualFileFolder.
 
         """
+        super(XWFVirtualFileFolder2, self).__init__(folderId)
         self.__name__ = folderId
-        self.id = folderId
-        self.title = title or folderId
+        self.title = title if title else folderId
         self.ucid = None
 
         # period in seconds, defaults to 72 hours
         self.public_access_period = 259200
 
-        self.groupInfo = createObject('groupserver.GroupInfo', self)
+    @Lazy
+    def groupInfo(self):
+        retval = createObject('groupserver.GroupInfo', self)
+        return retval
 
     def __before_publishing_traverse__(self, self2, request):
         """ """
@@ -147,6 +150,7 @@ class XWFVirtualFileFolder2(Folder):
     security.declarePublic('get_file_by_id')
 
     def get_file_by_id(self, fileId):
+        retval = None
         fileInfo = self.fileQuery.file_info(fileId)
         groupInfo = createObject('groupserver.GroupInfo', self)
         if fileInfo is None:
@@ -285,6 +289,7 @@ class XWFVirtualFileFolder2(Folder):
 
         if requestInfo.isImageRequest:
             content_type, img_width, img_height = getImageInfo(data)
+            img = None
             if (content_type):  # Check to see if we are actually and image
                 sendfile_header = self.get_xsendfile_header(REQUEST, RESPONSE)
                 if ((requestInfo.width == img_width)
@@ -299,8 +304,7 @@ class XWFVirtualFileFolder2(Folder):
                     handler = SquareImageHandler(requestInfo.squareSize,
                                                     sendfile_header)
                     img = handler.get_image_response(data, REQUEST, RESPONSE)
-            data = img if img is not None else data
-
+            data = data if img is None else img
         return data
 
     security.declareProtected('View', 'hide_file')

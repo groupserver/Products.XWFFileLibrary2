@@ -1,4 +1,4 @@
-# coding=utf-8
+    # coding=utf-8
 import sqlalchemy as sa
 from gs.database import getTable, getSession
 
@@ -47,11 +47,10 @@ class FileQuery(object):
         s = sa.select([ft.c.file_id, pt.c.group_id])
         s.append_whereclause(ft.c.file_id == fileId)
         s.append_whereclause(pt.c.post_id == ft.c.post_id)
-
         retval = None
         session = getSession()
         r = session.execute(s)
-        if r.rowcount == 1:
+        if r.rowcount > 0:
             row = r.fetchone()
             retval = {'file_id': row['file_id'],
                         'group_id': row['group_id']}
