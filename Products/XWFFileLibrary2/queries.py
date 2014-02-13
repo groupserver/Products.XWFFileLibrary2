@@ -1,4 +1,17 @@
-    # coding=utf-8
+# -*- coding: utf-8 -*-
+##############################################################################
+#
+# Copyright © 2014 OnlineGroups.net and Contributors.
+# All Rights Reserved.
+#
+# This software is subject to the provisions of the Zope Public License,
+# Version 2.1 (ZPL).  A copy of the ZPL should accompany this distribution.
+# THIS SOFTWARE IS PROVIDED "AS IS" AND ANY AND ALL EXPRESS OR IMPLIED
+# WARRANTIES ARE DISCLAIMED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF TITLE, MERCHANTABILITY, AGAINST INFRINGEMENT, AND FITNESS
+# FOR A PARTICULAR PURPOSE.
+#
+##############################################################################
 import sqlalchemy as sa
 from gs.database import getTable, getSession
 
@@ -44,7 +57,8 @@ class FileQuery(object):
     def file_info(self, fileId):
         ft = self.fileTable
         pt = self.postTable
-        s = sa.select([ft.c.file_id, pt.c.group_id])
+        s = sa.select([ft.c.file_id, ft.c.mime_type, ft.c.file_name,
+                        pt.c.group_id])
         s.append_whereclause(ft.c.file_id == fileId)
         s.append_whereclause(pt.c.post_id == ft.c.post_id)
         retval = None
@@ -53,5 +67,7 @@ class FileQuery(object):
         if r.rowcount > 0:
             row = r.fetchone()
             retval = {'file_id': row['file_id'],
+                        'mime_type': row['mime_type'],
+                        'name': row['file_name'],
                         'group_id': row['group_id']}
         return retval
