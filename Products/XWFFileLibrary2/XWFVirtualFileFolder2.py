@@ -31,7 +31,7 @@ from zope.cachedescriptors.property import Lazy
 from zope.component import createObject, getMultiAdapter
 from zope.interface import implements
 from zope.publisher.interfaces import NotFound
-from zope.security.interfaces import Forbidden
+# from zope.security.interfaces import Forbidden  # See the fixme below
 from gs.core import to_ascii
 from Products.XWFCore.XWFUtils import convertTextToId
 from .error import Hidden
@@ -192,8 +192,12 @@ class XWFVirtualFileFolder2(Folder):
 
         access = getSecurityManager().checkPermission('View', self)
         if ((not public_access) and (not access)):
-            m = 'You do not have permission to view the file "{0}"'
-            raise Forbidden(m.format(fileId))
+            # FIXME: handle Forbidden errors better
+            # m = 'You do not have permission to view the file "{0}"'
+            # raise Forbidden(m.format(fileId))
+            u = '/login.html?came_from={0}/files/{1}'
+            uri = u.format(self.groupInfo.relativeURL, fileId)
+            return self.REQUEST.RESPONSE.redirect(uri)
 
         if self.fileQuery.file_hidden(fileId):
             raise Hidden(fileId)
