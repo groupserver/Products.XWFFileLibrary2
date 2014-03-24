@@ -18,6 +18,7 @@
 # You MUST follow the rules in http://iopen.net/STYLE before checking in code
 # to the trunk. Code which does not follow the rules will be rejected.
 #
+from __future__ import absolute_import
 import os
 from types import *
 from AccessControl import getSecurityManager, ClassSecurityInfo
@@ -30,14 +31,14 @@ from zope.cachedescriptors.property import Lazy
 from zope.component import createObject, getMultiAdapter
 from zope.interface import implements
 from zope.publisher.interfaces import NotFound
-from zope.security.interfaces import Unauthorized
-from Products.XWFCore.XWFUtils import convertTextToAscii
+from zope.security.interfaces import Forbidden
+from gs.core import to_ascii
 from Products.XWFCore.XWFUtils import convertTextToId
-from error import Hidden
-from image import ImageHandler, SquareImageHandler
-from interfaces import IXWFVirtualFileFolder
-from queries import FileQuery
-from requestinfo import RequestInfo
+from .error import Hidden
+from .image import ImageHandler, SquareImageHandler
+from .interfaces import IXWFVirtualFileFolder
+from .queries import FileQuery
+from .requestinfo import RequestInfo
 
 import logging
 log = logging.getLogger('XWFFileLibrary2.XWFVirtualFileFolder2')
@@ -191,8 +192,8 @@ class XWFVirtualFileFolder2(Folder):
 
         access = getSecurityManager().checkPermission('View', self)
         if ((not public_access) and (not access)):
-            m = u'You do not have permission to view the file {0}'
-            raise Unauthorized(m.format(fileId))
+            m = 'You do not have permission to view the file "{0}"'
+            raise Forbidden(m.format(fileId))
 
         if self.fileQuery.file_hidden(fileId):
             raise Hidden(fileId)
@@ -395,7 +396,7 @@ def manage_addXWFVirtualFileFolder2(self, folderId, title='',
 
     """
     folderId = convertTextToId(folderId)
-    title = convertTextToAscii(title) or convertTextToAscii(folderId)
+    title = to_ascii(title) or to_ascii(folderId)
     obj = XWFVirtualFileFolder2(folderId, title)
     self._setObject(folderId, obj)
 
