@@ -268,7 +268,7 @@ class XWFVirtualFileFolder2(Folder):
                 data = self.get_file(REQUEST, RESPONSE, data_only=True)
             else:
                 data = self.get_file(REQUEST, RESPONSE)
-        except Hidden, h:  # lint:ok
+        except Hidden as h:  # lint:ok
             # --=mpj17=-- The post that includes this file is hidden.
             # By extension, this means the file is hidden. We *could*
             # just pass up a zExceptions.Unauthorized error up, but
