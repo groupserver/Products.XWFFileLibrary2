@@ -195,8 +195,11 @@ class XWFVirtualFileFolder2(Folder):
             # FIXME: handle Forbidden errors better
             # m = 'You do not have permission to view the file "{0}"'
             # raise Forbidden(m.format(fileId))
-            u = '/login.html?came_from={0}/files/{1}'
-            uri = u.format(self.groupInfo.relativeURL, fileId)
+            #
+            # For reasons to do with aquisition being awful use the redirector
+            # as the came_from
+            u = '/login.html?came_from=/r/file/{0}'
+            uri = u.format(fileId)
             return self.REQUEST.RESPONSE.redirect(uri)
 
         if self.fileQuery.file_hidden(fileId):
