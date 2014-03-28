@@ -151,18 +151,19 @@ class XWFVirtualFileFolder2(Folder):
     security.declarePublic('get_file_by_id')
 
     def get_file_by_id(self, fileId):
+        fid = to_ascii(fileId)
         retval = None
-        fileInfo = self.fileQuery.file_info(fileId)
+        fileInfo = self.fileQuery.file_info(fid)
         groupInfo = createObject('groupserver.GroupInfo', self)
         if fileInfo is None:
-            raise NotFound(self, fileId)
+            raise NotFound(self, fid)
         elif fileInfo['group_id'] != groupInfo.id:
             m = u'The file {0} is not in the group {1}'
-            raise Unauthorized(m.format(fileId, groupInfo.id))
+            raise Unauthorized(m.format(fid, groupInfo.id))
         else:
             l = self.get_xwfFileLibrary()
             s = l.get_fileStorage()
-            retval = s.get_file(fileId)
+            retval = s.get_file(fid)
         return retval
 
     security.declarePublic('get_file')
