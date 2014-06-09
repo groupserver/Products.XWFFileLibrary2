@@ -272,10 +272,10 @@ class XWFVirtualFileFolder2(Folder):
             # For reasons to do with aquisition being awful use the redirector
             # as the came_from
             u = '/login.html?came_from=/r/file/{0}'
-            uri = u.format(fileId)
+            uri = u.format(requestInfo.fileId)
             m = 'Redirecting to <{0}> because there the public-access for '\
                 'file "{1}" has passed, and the user lacks permission.'
-            msg = m.format(uri, fileId)
+            msg = m.format(uri, requestInfo.fileId)
             log.info(msg)
             return self.REQUEST.RESPONSE.redirect(uri)
 
