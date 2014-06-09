@@ -19,6 +19,8 @@
 # to the trunk. Code which does not follow the rules will be rejected.
 #
 from __future__ import absolute_import
+from logging import getLogger
+log = getLogger('XWFFileLibrary2.XWFVirtualFileFolder2')
 import os
 from types import *
 from AccessControl import getSecurityManager, ClassSecurityInfo
@@ -39,10 +41,6 @@ from .image import ImageHandler, SquareImageHandler
 from .interfaces import IXWFVirtualFileFolder
 from .queries import FileQuery
 from .requestinfo import RequestInfo
-
-import logging
-log = logging.getLogger('XWFFileLibrary2.XWFVirtualFileFolder2')
-
 _marker = []
 
 
@@ -178,18 +176,15 @@ class XWFVirtualFileFolder2(Folder):
         fileId = REQUEST.form.get('id', '')
         fileObject = self.get_file_by_id(fileId)
 
+        public_access = False
         if fileObject:
             modification_time = fileObject.modification_time()
             # transform period from seconds into days
             p = getattr(self, 'public_access_period', 0)
             public_access_period = float(p) / 86400.0
 
-            if DateTime() < (modification_time + public_access_period):
-                public_access = True
-            else:
-                public_access = False
-        else:
-            public_access = False
+            public_access = DateTime() < (modification_time
+                                            + public_access_period)
 
         access = getSecurityManager().checkPermission('View', self)
         if ((not public_access) and (not access)):
@@ -201,6 +196,10 @@ class XWFVirtualFileFolder2(Folder):
             # as the came_from
             u = '/login.html?came_from=/r/file/{0}'
             uri = u.format(fileId)
+            m = 'Redirecting to <{0}> because there is no public-access for '\
+                'the file "{1}"'
+            msg = m.format(uri, fileId)
+            log.info(msg)
             return self.REQUEST.RESPONSE.redirect(uri)
 
         if self.fileQuery.file_hidden(fileId):
