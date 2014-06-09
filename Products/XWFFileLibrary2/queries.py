@@ -58,7 +58,7 @@ class FileQuery(object):
         ft = self.fileTable
         pt = self.postTable
         s = sa.select([ft.c.file_id, ft.c.mime_type, ft.c.file_name,
-                        pt.c.group_id])
+                        pt.c.group_id, pt.c.date])
         s.append_whereclause(ft.c.file_id == fileId)
         s.append_whereclause(pt.c.post_id == ft.c.post_id)
         retval = None

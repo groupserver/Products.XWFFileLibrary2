@@ -255,8 +255,16 @@ class XWFVirtualFileFolder2(Folder):
         requestInfo = RequestInfo(REQUEST)
         REQUEST.form['id'] = requestInfo.fileId
 
-        if ((not self.has_public_access(requestInfo.fileId)
-            and (not getSecurityManager().checkPermission('View', self)))):
+        if (self.has_public_access(requestInfo.fileId)):
+            m = 'Allowing access, because "{0}" is still under the '\
+                'public-access period.'
+            msg = m.format(requestInfo.fileId)
+            log.info(msg)
+        elif (getSecurityManager().checkPermission('View', self)):
+            m = 'The user has permission to view "{0}".'
+            msg = m.format(requestInfo.fileId)
+            log.info(msg)
+        else:  # Lacking permission and the public-access period has passed.
             # FIXME: handle Forbidden errors better
             # m = 'You do not have permission to view the file "{0}"'
             # raise Forbidden(m.format(fileId))
@@ -265,8 +273,8 @@ class XWFVirtualFileFolder2(Folder):
             # as the came_from
             u = '/login.html?came_from=/r/file/{0}'
             uri = u.format(fileId)
-            m = 'Redirecting to <{0}> because there is no public-access for '\
-                'the file "{1}"'
+            m = 'Redirecting to <{0}> because there the public-access for '\
+                'file "{1}" has passed, and the user lacks permission.'
             msg = m.format(uri, fileId)
             log.info(msg)
             return self.REQUEST.RESPONSE.redirect(uri)
