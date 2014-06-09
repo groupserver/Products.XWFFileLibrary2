@@ -18,14 +18,15 @@
 # You MUST follow the rules in http://iopen.net/STYLE before checking in code
 # to the trunk. Code which does not follow the rules will be rejected.
 #
-from __future__ import absolute_import
+from __future__ import absolute_import, division
+from datetime import timedelta
 from logging import getLogger
 log = getLogger('XWFFileLibrary2.XWFVirtualFileFolder2')
 import os
 from types import *
 from AccessControl import getSecurityManager, ClassSecurityInfo
 from App.class_init import InitializeClass
-from DateTime import DateTime  # --=mpj17=-- FIXME? datetime.datetime?
+#from DateTime import DateTime  # --=mpj17=-- FIXME? datetime.datetime?
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from OFS.Folder import Folder
 from zope.app.file.image import getImageInfo
@@ -34,7 +35,7 @@ from zope.component import createObject, getMultiAdapter
 from zope.interface import implements
 from zope.publisher.interfaces import NotFound
 # from zope.security.interfaces import Forbidden  # See the fixme below
-from gs.core import to_ascii
+from gs.core import to_ascii, curr_time as now
 from Products.XWFCore.XWFUtils import convertTextToId
 from .error import Hidden
 from .image import ImageHandler, SquareImageHandler
@@ -176,32 +177,6 @@ class XWFVirtualFileFolder2(Folder):
         fileId = REQUEST.form.get('id', '')
         fileObject = self.get_file_by_id(fileId)
 
-        public_access = False
-        if fileObject:
-            modification_time = fileObject.modification_time()
-            # transform period from seconds into days
-            p = getattr(self, 'public_access_period', 0)
-            public_access_period = float(p) / 86400.0
-
-            public_access = DateTime() < (modification_time
-                                            + public_access_period)
-
-        access = getSecurityManager().checkPermission('View', self)
-        if ((not public_access) and (not access)):
-            # FIXME: handle Forbidden errors better
-            # m = 'You do not have permission to view the file "{0}"'
-            # raise Forbidden(m.format(fileId))
-            #
-            # For reasons to do with aquisition being awful use the redirector
-            # as the came_from
-            u = '/login.html?came_from=/r/file/{0}'
-            uri = u.format(fileId)
-            m = 'Redirecting to <{0}> because there is no public-access for '\
-                'the file "{1}"'
-            msg = m.format(uri, fileId)
-            log.info(msg)
-            return self.REQUEST.RESPONSE.redirect(uri)
-
         if self.fileQuery.file_hidden(fileId):
             raise Hidden(fileId)
         # assert ((public_access or access) and not(hidden))
@@ -250,6 +225,15 @@ class XWFVirtualFileFolder2(Folder):
 
         return sendfile_header
 
+    def has_public_access(self, fileId):
+        retval = False
+        fileInfo = self.fileQuery.file_info(fileId)
+        if fileInfo:
+            p = int(getattr(self, 'public_access_period', 0))
+            public_access_period = timedelta(seconds=p)
+            retval = now() < (fileInfo['date'] + public_access_period)
+        return retval
+
     security.declarePublic('f')
 
     def f(self, REQUEST, RESPONSE):
@@ -270,6 +254,23 @@ class XWFVirtualFileFolder2(Folder):
         """
         requestInfo = RequestInfo(REQUEST)
         REQUEST.form['id'] = requestInfo.fileId
+
+        if ((not self.has_public_access(requestInfo.fileId)
+            and (not getSecurityManager().checkPermission('View', self)))):
+            # FIXME: handle Forbidden errors better
+            # m = 'You do not have permission to view the file "{0}"'
+            # raise Forbidden(m.format(fileId))
+            #
+            # For reasons to do with aquisition being awful use the redirector
+            # as the came_from
+            u = '/login.html?came_from=/r/file/{0}'
+            uri = u.format(fileId)
+            m = 'Redirecting to <{0}> because there is no public-access for '\
+                'the file "{1}"'
+            msg = m.format(uri, fileId)
+            log.info(msg)
+            return self.REQUEST.RESPONSE.redirect(uri)
+
         try:
             if (requestInfo.isSquare or requestInfo.isResize):
                 # we set data_only=True in case the backend uses sendfile
@@ -377,9 +378,9 @@ class XWFVirtualFileFolder2(Folder):
         if size < 5000:
             return 'tiny'
         elif size < 1000000:
-            return '{0}KB'.format(size / 1024)
+            return '{0}KB'.format(size // 1024)
         else:
-            return '{0}MB'.format(size / (1024 * 1024))
+            return '{0}MB'.format(size // (1024 * 1024))
 
     def printable_summary(self, result):
         """ Given a result, determine if the summary is actually printable or

@@ -69,5 +69,6 @@ class FileQuery(object):
             retval = {'file_id': row['file_id'],
                         'mime_type': row['mime_type'],
                         'name': row['file_name'],
-                        'group_id': row['group_id']}
+                        'group_id': row['group_id'],
+                        'date': row['date']}
         return retval
