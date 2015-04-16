@@ -2,7 +2,9 @@ import hashlib
 import string
 import time
 
-def convert_int2b(num, alphabet, converted=[]):
+def convert_int2b(num, alphabet, converted=None):
+    if converted is None:
+        converted = []
     mod = num % len(alphabet); rem = num / len(alphabet)
     converted.append(alphabet[mod])
     if rem:
@@ -38,11 +40,11 @@ def fingerprint_file(file_object):
        digest.update(data)
        data = file_object.read(bs)
 
-   size = file_object.tell() 
+   size = file_object.tell()
 
    # reset to original position
    file_object.seek(pos)
-   
+
    fingerprint = convert_int2b62(long(digest.hexdigest(), 16))+'-'+convert_int2b62(size)+'-'+convert_int2b62(int(time.time()*100))
 
    return fingerprint
