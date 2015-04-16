@@ -1,6 +1,13 @@
 import hashlib
 import time
-from gs.core import convert_int2b62
+from gs.core import convert_int2b62 as u_convert_int2b62
+
+
+def convert_int2b62(i):
+    if type(i) not in (int, long):
+        raise TypeError('Not an int')
+    retval = u_convert_int2b62(i).encode('ascii', 'ignore')
+    return retval
 
 
 def fingerprint_file(file_object):
