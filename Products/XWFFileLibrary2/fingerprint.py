@@ -1,22 +1,7 @@
 import hashlib
-import string
 import time
+from gs.core import convert_int2b62
 
-def convert_int2b(num, alphabet, converted=None):
-    if converted is None:
-        converted = []
-    mod = num % len(alphabet); rem = num / len(alphabet)
-    converted.append(alphabet[mod])
-    if rem:
-        return convert_int2b(rem, alphabet, converted)
-    converted.reverse()
-    retval = ''.join(converted)
-    return retval
-
-def convert_int2b62(num):
-    alphabet = string.printable[:62]
-    retval = convert_int2b(num, alphabet, [])
-    return retval
 
 def fingerprint_file(file_object):
    """ Our file fingerprint consists of three parts:
