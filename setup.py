@@ -56,7 +56,7 @@ setup(name='Products.XWFFileLibrary2',
           'gs.core',
           'gs.database',
           'gs.errormesg',
-          'gs.group.messages.post',
+          'gs.group.messages.post.text',
           'gs.image',
       ],
       entry_points="""
