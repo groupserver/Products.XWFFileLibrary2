@@ -2,7 +2,7 @@
 <configure xmlns="http://namespaces.zope.org/zope"
   xmlns:browser="http://namespaces.zope.org/browser"
   xmlns:five="http://namespaces.zope.org/five">
-  
+
     <five:deprecatedManageAddDelete
            class="Products.XWFFileLibrary2.XWFFileStorage2.XWFFileStorage2" />
     <five:deprecatedManageAddDelete
@@ -15,17 +15,16 @@
       for="Products.XWFFileLibrary2.interfaces.IXWFFile2
            zope.lifecycleevent.interfaces.IObjectCopiedEvent"
       handler="Products.XWFFileLibrary2.XWFFile2.copiedFile"
-      />  
+      />
   <browser:resource name="whiteFileSprites-20070810.png"
     file="browser/images/fileIcons/file-icons-20070810.png"
     permission="zope2.Public" />
 
   <!-- The Gone (410) page -->
-  <browser:page 
+  <browser:page
     for=".interfaces.IXWFVirtualFileFolder"
     name="file_hidden.html"
-    class=".hidden.FileHidden" 
+    class=".hidden.FileHidden"
     permission="zope2.Public" />
 
 </configure>
-
