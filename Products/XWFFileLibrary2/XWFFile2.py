@@ -23,7 +23,7 @@ from mimetypes import MimeTypes
 import os
 import string
 import tempfile
-from types import *
+# from types import *
 import xml.sax
 import zipfile
 from xml.sax.handler import ContentHandler
@@ -146,7 +146,11 @@ def removedFile(ob, event):
 
     """
     filepath = os.path.join(ob._base_files_dir, ob.getId())
-    os.remove(filepath)
+    try:
+        os.remove(filepath)
+    except OSError:
+        msg = 'Ignoring deletion of non-existant file "{0}".'.format(filepath)
+        log.warn(msg)
 
 
 def movedFile(ob, event):
@@ -176,14 +180,13 @@ class XWFFile2(CatalogAware, File):
     security = ClassSecurityInfo()
     implements(IXWFFile2)
     manage_options = File.manage_options + \
-                     ({'label': 'Reindex',
-                       'action': 'reindex_file'},)
+        ({'label': 'Reindex', 'action': 'reindex_file'},)
     meta_type = 'XWF File 2'
     version = 0.1
     # base files dir
     _base_files_dir = ''
     converters = {'application/vnd.oasis.opendocument.spreadsheet':
-                        (OOfficeConverter(), 'OpenOffice Spreadsheet')}
+                  (OOfficeConverter(), 'OpenOffice Spreadsheet')}
 
     def __init__(self, id):
         """ Initialise a new instance of XWFFile.
@@ -218,10 +221,7 @@ class XWFFile2(CatalogAware, File):
         """ Render a page template file, handling all the weird magic for us.
 
         """
-        return apply(PageTemplateFile(filename,
-                                      globals()).__of__(self),
-                     args,
-                     kws)
+        return apply(PageTemplateFile(filename, globals()).__of__(self), args, kws)
 
     def write(self, file_object):
         """ Write the file data to our backend, given an object with a 'file'
@@ -413,8 +413,7 @@ manage_addXWFFile2Form = PageTemplateFile(
     globals(), __name__='manage_addXWFFile2Form')
 
 
-def manage_addXWFFile2(container, fileId, file_object,
-                             REQUEST=None, RESPONSE=None, submit=None):
+def manage_addXWFFile2(container, fileId, file_object, REQUEST=None, RESPONSE=None, submit=None):
     """ Add a new instance of XWFFile.
 
         UnitTest: TestXWFFileLibrary
