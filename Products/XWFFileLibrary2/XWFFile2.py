@@ -18,7 +18,10 @@
 # to the trunk. Code which does not follow the rules will be rejected.
 #
 import cgi
-import cStringIO
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from io import StringIO
 from mimetypes import MimeTypes
 import os
 import string
@@ -31,11 +34,9 @@ from xml.sax.handler import ContentHandler
 #lint:disable
 try:
     # 2.12+
-    from zope.container.interfaces import IObjectRemovedEvent, \
-        IObjectAddedEvent
+    from zope.container.interfaces import IObjectRemovedEvent, IObjectAddedEvent
 except ImportError:
-    from zope.app.container.interfaces import IObjectRemovedEvent, \
-        IObjectAddedEvent
+    from zope.app.container.interfaces import IObjectRemovedEvent, IObjectAddedEvent
 #lint:enable
 
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
@@ -47,7 +48,7 @@ from Products.XWFCore.XWFUtils import removePathsFromFilenames
 from Products.XWFCore import XWFUtils
 from zope.interface import implements
 from Products.XWFFileLibrary2.interfaces import IXWFFile2
-
+from gs.core import to_unicode_or_bust
 import logging
 log = logging.getLogger('XWFFile2')
 
@@ -107,11 +108,11 @@ class ootextHandler(ContentHandler):
         self._data.write(ch.encode("utf-8") + ' ')
 
     def startDocument(self):
-        self._data = cStringIO.StringIO()
+        self._data = StringIO()
 
     def getxmlcontent(self, doc):
 
-        f = cStringIO.StringIO(doc)
+        f = StringIO(doc)
 
         doctype = '<!DOCTYPE office:document-content PUBLIC '\
             '"-//OpenOffice.org//DTD OfficeDocument 1.0//EN" "office.dtd">'
@@ -266,8 +267,7 @@ class XWFFile2(CatalogAware, File):
             f.close()
 
         # fix the title
-        title = self.title
-        title = unicode(title, 'UTF-8', 'ignore')
+        title = to_unicode_or_bust(self.title)
         title = removePathsFromFilenames(title)
         self.title = title
 
@@ -339,14 +339,14 @@ class XWFFile2(CatalogAware, File):
         if converters[0]:
             data, encoding = converters[0].convert(self.data)
             if encoding != 'UTF-8':
-                data = unicode(data, 'UTF-8', 'ignore')
+                data = to_unicode_or_bust(data)
         else:
             data = self.data[:5000]
 
             data = XWFUtils.convertTextToAscii(data)
 
             try:
-                data = unicode(data, 'UTF-8', 'ignore')
+                data = to_unicode_or_bust(data)
             except:
                 data = u''
 
@@ -379,10 +379,7 @@ class XWFFile2(CatalogAware, File):
         """ Return a summary for indexing in the catalog.
 
         """
-        description = self.getProperty('description', u'')
-        if not isinstance(description, unicode):
-            description = unicode(description, 'UTF-8', 'ignore')
-
+        description = to_unicode_or_bust(self.getProperty('description', u''))
         return description
 
     summary = indexable_summary
@@ -408,9 +405,8 @@ InitializeClass(XWFFile2)
 #
 # Zope Management Methods
 #
-manage_addXWFFile2Form = PageTemplateFile(
-    'management/manage_addXWFFileForm.zpt',
-    globals(), __name__='manage_addXWFFile2Form')
+manage_addXWFFile2Form = PageTemplateFile('management/manage_addXWFFileForm.zpt',
+                                          globals(), __name__='manage_addXWFFile2Form')
 
 
 def manage_addXWFFile2(container, fileId, file_object, REQUEST=None, RESPONSE=None, submit=None):
